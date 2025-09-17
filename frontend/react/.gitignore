@@ -1,0 +1,187 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Production builds
+/build
+/dist
+
+# Testing
+/coverage
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Storybook build outputs
+.out
+.storybook-out
+storybook-static/
+
+# Temporary folders
+tmp/
+temp/
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Next.js
+.next/
+out/
+
+# Nuxt.js
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# public
+
+# Vite
+dist-ssr
+*.local
+
+# Rollup
+.rollup.cache
+
+# Testing
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# E2E testing
+/e2e/test-results/
+/e2e/playwright-report/
+
+# Vercel
+.vercel
+
+# Netlify
+.netlify/
+
+# Cloudflare Workers
+.wrangler/
+
+# Sentry
+.sentryclirc
+
+# Local Netlify folder
+.netlify
+
+# Turbo
+.turbo
+
+# Generated types
+src/types/generated/
+
+# React DevTools profiler files
+*.react-profiler.json
+
+# Bundle analyzer
+.webpack-bundle-analyzer/
+
+# PWA files
+sw.js
+sw.js.map
+workbox-*.js
+workbox-*.js.map
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Capacitor
+/android/
+/ios/
+capacitor.config.json
+
+# Tauri
+/src-tauri/target/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini

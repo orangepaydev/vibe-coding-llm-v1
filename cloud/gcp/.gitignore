@@ -1,0 +1,102 @@
+# Google Cloud specific files
+.gcloud/
+gcloud-credentials.json
+
+# Service account keys (never commit these)
+*.json
+*-key.json
+service-account*.json
+credentials*.json
+
+# Deployment Manager
+*.jinja
+*.jinja.schema
+*.py.schema
+
+# Cloud Functions
+.gcloudignore
+
+# App Engine
+app.yaml
+dispatch.yaml
+cron.yaml
+queue.yaml
+index.yaml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.envrc
+
+# Logs
+*.log
+logs/
+
+# Cloud Build
+cloudbuild.yaml
+cloudbuild.json
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Terraform (if used)
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Build artifacts
+dist/
+build/
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+target/
+*.class
+*.jar
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Python
+venv/
+env/
+.venv/
+.env/
+*.egg-info/
+
+# Node.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Java
+*.war
+*.ear
+hs_err_pid*
+
+# Go
+vendor/
+*.exe
+*.exe~
+
+# Docker
+Dockerfile.dev
+docker-compose.override.yml

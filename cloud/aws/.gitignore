@@ -1,0 +1,83 @@
+# AWS specific files
+.aws/
+aws-exports.js
+awsconfiguration.json
+
+# CloudFormation
+*.template
+*.template.json
+*.template.yaml
+*.cfn.json
+*.cfn.yaml
+
+# CDK
+cdk.out/
+cdk.context.json
+.cdk.staging/
+
+# SAM
+.sam/
+samconfig.toml
+
+# Lambda
+lambda-package/
+*.zip
+deployment-package.zip
+
+# Amplify
+amplify/
+.amplifyrc
+amplify-meta.json
+
+# Serverless Framework
+.serverless/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.envrc
+
+# Logs
+*.log
+logs/
+cloudformation-logs/
+
+# AWS credentials (never commit these)
+credentials
+config
+
+# Backup files
+*.backup
+*.bak
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+
+# Terraform (if used)
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
