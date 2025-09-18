@@ -18,6 +18,9 @@ This repository contains organized project templates and configurations for vari
 - **[Astro](./frontend/astro/)** - Modern static site generator and web framework
 - **[React](./frontend/react/)** - React applications and component libraries
 
+### 🎨 Agent Technologies
+- **[Astro](./agent/)** - AI Agents
+
 ## What's Included
 
 Each technology folder contains:
