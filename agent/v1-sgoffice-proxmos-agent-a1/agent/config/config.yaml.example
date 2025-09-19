@@ -1,0 +1,34 @@
+# Proxmox Agent Configuration
+
+# Proxmox API Configuration
+proxmox:
+  api_url: https://proxmox.example.com:8006/api2/json
+  username: user@pam
+  # password: your-password  # Better to use environment variables for sensitive data
+  node: pve
+  # token_name: proxmox-agent
+  # token_value: your-token-value
+
+# Slack Configuration
+slack:
+  # bot_token: xoxb-your-bot-token
+  # app_token: xapp-your-app-token
+  proxmox_channel: "#proxmox"
+
+# Google Calendar Configuration
+google_calendar:
+  credentials_file: credentials.json
+  token_file: token.json
+  calendar_id: primary
+
+# LLM Configuration
+llm:
+  provider: openai  # or ollama for local deployment
+  model: gpt-4-turbo  # or ollama model name like llama3:latest
+  temperature: 0.0
+  # api_key: your-openai-api-key
+  ollama_url: http://localhost:11434
+
+# Scheduler Configuration
+scheduler:
+  check_interval_minutes: 5
