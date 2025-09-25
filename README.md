@@ -2,6 +2,15 @@
 
 This repository contains organized project templates and configurations for various technology stacks, designed to accelerate development with best practices, coding standards, and proper tooling setup.
 
+## Repository with esamples 
+
+Below are some repository that could be used as research or reference
+
+- [Awesome copilot](https://github.com/github/awesome-copilot) contains sample instruction file, prompts for CoPilot
+- [Awesome Claude code](https://github.com/hesreallyhim/awesome-claude-code) sample claude equivalent of Awesome copilot
+
+---
+
 ## Repository Structure
 
 ### 🌩️ Cloud Technologies
