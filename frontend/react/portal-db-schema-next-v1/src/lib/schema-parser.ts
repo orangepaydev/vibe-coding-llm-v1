@@ -100,7 +100,7 @@ export function parseSchemaXML(xmlContent: string): Schema {
         mandatory: colNode.getAttribute("mandatory") === "y",
         identity: colNode.querySelector("identity")?.textContent || undefined,
         comment: colNode.querySelector("comment")?.textContent || undefined,
-        defo: colNode.querySelector("defo")?.textContent || undefined,
+        defaultValue: colNode.querySelector("defaultValue")?.textContent || undefined,
       };
       table.columns.push(column);
     });
@@ -222,8 +222,8 @@ export function serializeSchemaToXML(schema: Schema): string {
       if (column.comment) {
         xml += `        <comment>${escapeXML(column.comment)}</comment>\n`;
       }
-      if (column.defo) {
-        xml += `        <defo>${escapeXML(column.defo)}</defo>\n`;
+      if (column.defaultValue) {
+        xml += `        <defaultValue>${escapeXML(column.defaultValue)}</defaultValue>\n`;
       }
       
       xml += '      </column>\n';

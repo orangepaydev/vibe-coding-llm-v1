@@ -26,8 +26,8 @@ interface TableNodeProps {
   onMoveColumnUp: (tableName: string, columnIndex: number) => void;
   onMoveColumnDown: (tableName: string, columnIndex: number) => void;
   onRemoveColumn: (tableName: string, columnIndex: number) => void;
-  onAddColumn: (tableName: string, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string) => void;
-  onEditColumn: (tableName: string, columnIndex: number, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string) => void;
+  onAddColumn: (tableName: string, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string, comment?: string) => void;
+  onEditColumn: (tableName: string, columnIndex: number, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string, comment?: string) => void;
   onDeleteTable: (tableName: string) => void;
 }
 
@@ -62,6 +62,7 @@ export function TableNode({
   const [isUnique, setIsUnique] = React.useState(false);
   const [isNotNull, setIsNotNull] = React.useState(false);
   const [defaultValue, setDefaultValue] = React.useState("");
+  const [comment, setComment] = React.useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [deleteConfirmationName, setDeleteConfirmationName] = React.useState("");
 
@@ -126,6 +127,7 @@ export function TableNode({
     setIsUnique(false);
     setIsNotNull(false);
     setDefaultValue("");
+    setComment("");
     setIsDialogOpen(true);
   };
 
@@ -139,6 +141,7 @@ export function TableNode({
     setIsUnique(false); // TODO: Extract from unique indexes
     setIsNotNull(column.mandatory || false);
     setDefaultValue(column.defaultValue || "");
+    setComment(column.comment || "");
     setIsDialogOpen(true);
   };
 
@@ -156,7 +159,8 @@ export function TableNode({
         isPrimaryKey,
         isUnique,
         isNotNull,
-        defaultValue.trim() || undefined
+        defaultValue.trim() || undefined,
+        comment.trim() || undefined
       );
     } else {
       // Add new column
@@ -168,7 +172,8 @@ export function TableNode({
         isPrimaryKey,
         isUnique,
         isNotNull,
-        defaultValue.trim() || undefined
+        defaultValue.trim() || undefined,
+        comment.trim() || undefined
       );
     }
     
@@ -180,6 +185,7 @@ export function TableNode({
     setIsUnique(false);
     setIsNotNull(false);
     setDefaultValue("");
+    setComment("");
     setEditingColumnIndex(null);
     setIsDialogOpen(false);
   };
@@ -442,6 +448,17 @@ export function TableNode({
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleSubmit();
                   }}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Comment (optional)</label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Add a description or note for this column"
+                  className="w-full px-3 py-2 border rounded-md text-sm resize-none"
+                  rows={5}
                 />
               </div>
             </div>
