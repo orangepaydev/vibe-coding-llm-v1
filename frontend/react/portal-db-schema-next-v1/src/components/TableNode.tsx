@@ -26,8 +26,8 @@ interface TableNodeProps {
   onMoveColumnUp: (tableName: string, columnIndex: number) => void;
   onMoveColumnDown: (tableName: string, columnIndex: number) => void;
   onRemoveColumn: (tableName: string, columnIndex: number) => void;
-  onAddColumn: (tableName: string, name: string, type: string, length?: string) => void;
-  onEditColumn: (tableName: string, columnIndex: number, name: string, type: string, length?: string) => void;
+  onAddColumn: (tableName: string, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string) => void;
+  onEditColumn: (tableName: string, columnIndex: number, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string) => void;
   onDeleteTable: (tableName: string) => void;
 }
 
@@ -58,6 +58,10 @@ export function TableNode({
   const [newColumnName, setNewColumnName] = React.useState("");
   const [newColumnType, setNewColumnType] = React.useState("VARCHAR");
   const [newColumnLength, setNewColumnLength] = React.useState("");
+  const [isPrimaryKey, setIsPrimaryKey] = React.useState(false);
+  const [isUnique, setIsUnique] = React.useState(false);
+  const [isNotNull, setIsNotNull] = React.useState(false);
+  const [defaultValue, setDefaultValue] = React.useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [deleteConfirmationName, setDeleteConfirmationName] = React.useState("");
 
@@ -118,6 +122,10 @@ export function TableNode({
     setNewColumnName("");
     setNewColumnType("VARCHAR");
     setNewColumnLength("");
+    setIsPrimaryKey(false);
+    setIsUnique(false);
+    setIsNotNull(false);
+    setDefaultValue("");
     setIsDialogOpen(true);
   };
 
@@ -127,6 +135,10 @@ export function TableNode({
     setNewColumnName(column.name);
     setNewColumnType(column.type);
     setNewColumnLength(column.length || "");
+    setIsPrimaryKey(pkColumns.has(column.name));
+    setIsUnique(false); // TODO: Extract from unique indexes
+    setIsNotNull(column.mandatory || false);
+    setDefaultValue(column.defaultValue || "");
     setIsDialogOpen(true);
   };
 
@@ -140,7 +152,11 @@ export function TableNode({
         editingColumnIndex,
         newColumnName.trim(),
         newColumnType,
-        newColumnLength.trim() || undefined
+        newColumnLength.trim() || undefined,
+        isPrimaryKey,
+        isUnique,
+        isNotNull,
+        defaultValue.trim() || undefined
       );
     } else {
       // Add new column
@@ -148,7 +164,11 @@ export function TableNode({
         table.name,
         newColumnName.trim(),
         newColumnType,
-        newColumnLength.trim() || undefined
+        newColumnLength.trim() || undefined,
+        isPrimaryKey,
+        isUnique,
+        isNotNull,
+        defaultValue.trim() || undefined
       );
     }
     
@@ -156,6 +176,10 @@ export function TableNode({
     setNewColumnName("");
     setNewColumnType("VARCHAR");
     setNewColumnLength("");
+    setIsPrimaryKey(false);
+    setIsUnique(false);
+    setIsNotNull(false);
+    setDefaultValue("");
     setEditingColumnIndex(null);
     setIsDialogOpen(false);
   };
@@ -367,6 +391,53 @@ export function TableNode({
                   value={newColumnLength}
                   onChange={(e) => setNewColumnLength(e.target.value)}
                   placeholder="e.g., 255, 10,2"
+                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSubmit();
+                  }}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Column Constraints</label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={isPrimaryKey}
+                      onChange={(e) => setIsPrimaryKey(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span>Primary Key</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={isUnique}
+                      onChange={(e) => setIsUnique(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span>Unique</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={isNotNull}
+                      onChange={(e) => setIsNotNull(e.target.checked)}
+                      className="rounded"
+                    />
+                    <span>Not Null</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Default Value (optional)</label>
+                <input
+                  type="text"
+                  value={defaultValue}
+                  onChange={(e) => setDefaultValue(e.target.value)}
+                  placeholder="e.g., 0, '', NOW()"
                   className="w-full px-3 py-2 border rounded-md text-sm"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleSubmit();

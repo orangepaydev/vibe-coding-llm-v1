@@ -166,7 +166,16 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     });
   };
 
-  const handleAddColumn = (tableName: string, name: string, type: string, length?: string) => {
+  const handleAddColumn = (
+    tableName: string, 
+    name: string, 
+    type: string, 
+    length?: string,
+    isPrimary?: boolean,
+    isUnique?: boolean,
+    isNotNull?: boolean,
+    defaultValue?: string
+  ) => {
     setMutableSchema((prevSchema) => {
       const newSchema = { ...prevSchema };
       const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
@@ -179,16 +188,187 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
         name,
         type,
         length,
-        mandatory: false,
+        mandatory: isNotNull || isPrimary || false,
+        defaultValue,
       };
       
       newColumns.push(newColumn);
       newTable.columns = newColumns;
+      
+      // Handle primary key
+      if (isPrimary) {
+        const newIndexes = [...newTable.indexes];
+        const pkIndex = newIndexes.findIndex((idx) => idx.unique === "PRIMARY_KEY");
+        
+        if (pkIndex !== -1) {
+          // Add to existing primary key
+          newIndexes[pkIndex] = {
+            ...newIndexes[pkIndex],
+            columns: [...newIndexes[pkIndex].columns, name],
+          };
+        } else {
+          // Create new primary key index
+          newIndexes.push({
+            name: `pk_${tableName}`,
+            unique: "PRIMARY_KEY",
+            columns: [name],
+          });
+        }
+        newTable.indexes = newIndexes;
+      }
+      
+      // Handle unique constraint
+      if (isUnique) {
+        const newIndexes = [...newTable.indexes];
+        newIndexes.push({
+          name: `uk_${tableName}_${name}`,
+          unique: "UNIQUE",
+          columns: [name],
+        });
+        newTable.indexes = newIndexes;
+      }
+      
       newSchema.tables = [...newSchema.tables];
       newSchema.tables[tableIndex] = newTable;
       
       return newSchema;
     });
+  };
+
+  const handleEditColumn = (
+    tableName: string,
+    columnIndex: number,
+    name: string,
+    type: string,
+    length?: string,
+    isPrimary?: boolean,
+    isUnique?: boolean,
+    isNotNull?: boolean,
+    defaultValue?: string
+  ) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const oldColumnName = newTable.columns[columnIndex].name;
+      
+      // Update column
+      const newColumns = [...newTable.columns];
+      newColumns[columnIndex] = {
+        name,
+        type,
+        length,
+        mandatory: isNotNull || isPrimary || false,
+        defaultValue,
+      };
+      newTable.columns = newColumns;
+      
+      // Update indexes if column name changed
+      let newIndexes = [...newTable.indexes];
+      if (oldColumnName !== name) {
+        newIndexes = newIndexes.map((idx) => ({
+          ...idx,
+          columns: idx.columns.map((col) => col === oldColumnName ? name : col),
+        }));
+      }
+      
+      // Remove old primary key references for this column
+      newIndexes = newIndexes.map((idx) => {
+        if (idx.unique === "PRIMARY_KEY") {
+          return {
+            ...idx,
+            columns: idx.columns.filter((col) => col !== name),
+          };
+        }
+        return idx;
+      }).filter((idx) => idx.unique !== "PRIMARY_KEY" || idx.columns.length > 0);
+      
+      // Remove old unique indexes for this column
+      newIndexes = newIndexes.filter((idx) => 
+        !(idx.unique === "UNIQUE" && idx.columns.length === 1 && idx.columns[0] === oldColumnName)
+      );
+      
+      // Handle primary key
+      if (isPrimary) {
+        const pkIndex = newIndexes.findIndex((idx) => idx.unique === "PRIMARY_KEY");
+        
+        if (pkIndex !== -1) {
+          // Add to existing primary key
+          newIndexes[pkIndex] = {
+            ...newIndexes[pkIndex],
+            columns: [...newIndexes[pkIndex].columns, name],
+          };
+        } else {
+          // Create new primary key index
+          newIndexes.push({
+            name: `pk_${tableName}`,
+            unique: "PRIMARY_KEY",
+            columns: [name],
+          });
+        }
+      }
+      
+      // Handle unique constraint
+      if (isUnique) {
+        newIndexes.push({
+          name: `uk_${tableName}_${name}`,
+          unique: "UNIQUE",
+          columns: [name],
+        });
+      }
+      
+      newTable.indexes = newIndexes;
+      
+      // Update foreign keys if column name changed
+      if (oldColumnName !== name) {
+        const newForeignKeys = newTable.foreignKeys.map((fk) => ({
+          ...fk,
+          columns: fk.columns.map((col) => 
+            col.name === oldColumnName ? { ...col, name } : col
+          ),
+        }));
+        newTable.foreignKeys = newForeignKeys;
+      }
+      
+      newSchema.tables = [...newSchema.tables];
+      newSchema.tables[tableIndex] = newTable;
+      
+      return newSchema;
+    });
+  };
+
+  const handleDeleteTable = (tableName: string) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      
+      // Remove the table
+      newSchema.tables = newSchema.tables.filter((t) => t.name !== tableName);
+      
+      // Remove foreign keys that reference this table
+      newSchema.tables = newSchema.tables.map((table) => ({
+        ...table,
+        foreignKeys: table.foreignKeys.filter((fk) => fk.referencedTable !== tableName),
+      }));
+      
+      // Remove from layouts
+      newSchema.layouts = newSchema.layouts.map((layout) => ({
+        ...layout,
+        entities: layout.entities.filter((e) => e.name !== tableName),
+        groups: layout.groups.map((group) => ({
+          ...group,
+          entities: group.entities.filter((e) => e !== tableName),
+        })),
+      }));
+      
+      return newSchema;
+    });
+    
+    // Clear active table if it was deleted
+    if (activeTable === tableName) {
+      setActiveTable(null);
+    }
   };
 
   const handleSave = async () => {
@@ -449,6 +629,8 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                 onMoveColumnDown={handleMoveColumnDown}
                 onRemoveColumn={handleRemoveColumn}
                 onAddColumn={handleAddColumn}
+                onEditColumn={handleEditColumn}
+                onDeleteTable={handleDeleteTable}
               />
             );
           })}
