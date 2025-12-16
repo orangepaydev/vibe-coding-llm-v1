@@ -60,7 +60,7 @@ function DbEditContent() {
 
   return (
     <main className="flex min-h-screen flex-col bg-gray-50">
-      <SchemaCanvas schema={schema} layoutIndex={0} />
+      <SchemaCanvas schema={schema} layoutIndex={0} filename={filename || "schema.dbs"} />
     </main>
   );
 }

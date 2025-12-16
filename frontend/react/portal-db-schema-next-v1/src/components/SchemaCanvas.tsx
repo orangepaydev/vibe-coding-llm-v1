@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import { Schema, Table, EntityLayout, Group } from "@/lib/schema-parser";
+import { Schema, Table, EntityLayout, Group, serializeSchemaToXML } from "@/lib/schema-parser";
 import { TableNode } from "./TableNode";
 import { RelationshipLines } from "./RelationshipLines";
 
 interface SchemaCanvasProps {
   schema: Schema;
   layoutIndex?: number;
+  filename?: string;
 }
 
 interface TablePosition {
@@ -15,7 +16,7 @@ interface TablePosition {
   y: number;
 }
 
-export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
+export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" }: SchemaCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [tablePositions, setTablePositions] = useState<Map<string, TablePosition>>(new Map());
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
@@ -25,6 +26,8 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [activeTable, setActiveTable] = useState<string | null>(null);
   const [mutableSchema, setMutableSchema] = useState<Schema>(schema);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   const layout = mutableSchema.layouts[layoutIndex];
   // Update mutable schema when prop changes
@@ -72,6 +75,29 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
       const newPositions = new Map(prev);
       newPositions.set(tableName, { x, y });
       return newPositions;
+    });
+    
+    // Update the schema layout entities with new position
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const newLayouts = [...newSchema.layouts];
+      const currentLayout = { ...newLayouts[layoutIndex] };
+      const newEntities = [...currentLayout.entities];
+      
+      const entityIndex = newEntities.findIndex((e) => e.name === tableName);
+      if (entityIndex !== -1) {
+        newEntities[entityIndex] = {
+          ...newEntities[entityIndex],
+          x: Math.round(x),
+          y: Math.round(y),
+        };
+      }
+      
+      currentLayout.entities = newEntities;
+      newLayouts[layoutIndex] = currentLayout;
+      newSchema.layouts = newLayouts;
+      
+      return newSchema;
     });
   };
 
@@ -140,6 +166,40 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
     });
   };
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveMessage(null);
+    
+    try {
+      const xmlContent = serializeSchemaToXML(mutableSchema);
+      
+      const response = await fetch('/api/save-schema', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename,
+          content: xmlContent,
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        setSaveMessage('✓ Saved successfully');
+        setTimeout(() => setSaveMessage(null), 3000);
+      } else {
+        setSaveMessage(`✗ Error: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      setSaveMessage('✗ Failed to save');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Pan functionality
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
@@ -147,6 +207,9 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
       setIsPanning(true);
       setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
       e.preventDefault();
+    } else if (e.button === 0 && e.target === e.currentTarget) {
+      // Left click on canvas background (not on a table)
+      setActiveTable(null);
     }
   };
 
@@ -260,7 +323,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-gray-50">
       {/* Controls */}
-      <div className="absolute top-4 left-4 z-50 bg-white rounded-lg shadow-lg p-2 space-y-2">
+      <div id="control-panel" className="absolute top-4 left-4 z-50 bg-white rounded-lg shadow-lg p-2 space-y-2">
         <div className="text-xs font-semibold text-gray-700">
           {mutableSchema.projectName} - {layout.name}
         </div>
@@ -291,6 +354,18 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
         >
           Reset View
         </button>
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="w-full px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          {isSaving ? 'Saving...' : 'Save Schema'}
+        </button>
+        {saveMessage && (
+          <div className={`text-xs text-center py-1 rounded ${saveMessage.startsWith('✓') ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
+            {saveMessage}
+          </div>
+        )}
         <div className="text-xs text-gray-400 mt-2 pt-2 border-t">
           Ctrl+Scroll: Zoom<br/>
           Ctrl+Drag: Pan

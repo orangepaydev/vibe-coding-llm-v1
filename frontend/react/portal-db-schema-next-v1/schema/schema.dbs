@@ -665,7 +665,7 @@ a - admin</comment>
   <layout name="Main Layout" id="Layout-171b" show_relation="columns">
     <entity schema="portal" name="auth_audit_log" color="C7F4BE" x="323" y="646"/>
     <entity schema="portal" name="auth_resource" color="C7F4BE" x="527" y="85"/>
-    <entity schema="portal" name="auth_user" color="C7F4BE" x="898" y="308"/>
+    <entity schema="portal" name="auth_user" color="C7F4BE" x="874" y="353"/>
     <entity schema="portal" name="auth_user_credential" color="C7F4BE" x="51" y="629"/>
     <entity schema="portal" name="auth_user_detail" color="C7F4BE" x="51" y="357"/>
     <entity schema="portal" name="auth_user_group" color="F4DDBE" x="527" y="629"/>

@@ -195,3 +195,99 @@ export function parseSchemaXML(xmlContent: string): Schema {
     layouts,
   };
 }
+
+export function serializeSchemaToXML(schema: Schema): string {
+  let xml = '<?xml version="1.0" encoding="utf-8" ?>\n';
+  xml += `<project name="${escapeXML(schema.projectName)}" database="${escapeXML(schema.database)}">\n`;
+  xml += `  <schema name="${escapeXML(schema.schemaName)}">\n`;
+
+  // Serialize tables
+  schema.tables.forEach((table) => {
+    xml += `    <table name="${escapeXML(table.name)}" row_count="${table.rowCount || 0}">\n`;
+    
+    if (table.comment) {
+      xml += `      <comment>${escapeXML(table.comment)}</comment>\n`;
+    }
+
+    // Serialize columns
+    table.columns.forEach((column) => {
+      xml += `      <column name="${escapeXML(column.name)}" type="${escapeXML(column.type)}"`;
+      if (column.length) xml += ` length="${escapeXML(column.length)}"`;
+      if (column.mandatory) xml += ` mandatory="y"`;
+      xml += '>\n';
+      
+      if (column.identity) {
+        xml += `        <identity>${escapeXML(column.identity)}</identity>\n`;
+      }
+      if (column.comment) {
+        xml += `        <comment>${escapeXML(column.comment)}</comment>\n`;
+      }
+      if (column.defo) {
+        xml += `        <defo>${escapeXML(column.defo)}</defo>\n`;
+      }
+      
+      xml += '      </column>\n';
+    });
+
+    // Serialize indexes
+    table.indexes.forEach((index) => {
+      xml += `      <index name="${escapeXML(index.name)}" unique="${escapeXML(index.unique)}">\n`;
+      index.columns.forEach((col) => {
+        xml += `        <column name="${escapeXML(col)}"/>\n`;
+      });
+      xml += '      </index>\n';
+    });
+
+    // Serialize foreign keys
+    table.foreignKeys.forEach((fk) => {
+      xml += `      <fk name="${escapeXML(fk.name)}" to_schema="${escapeXML(fk.toSchema)}" to_table="${escapeXML(fk.toTable)}"`;
+      if (fk.options) xml += ` options="${escapeXML(fk.options)}"`;
+      xml += '>\n';
+      
+      fk.columns.forEach((col) => {
+        xml += `        <fk_column name="${escapeXML(col.name)}" pk="${escapeXML(col.pk)}"/>\n`;
+      });
+      
+      xml += '      </fk>\n';
+    });
+
+    xml += '    </table>\n';
+  });
+
+  xml += '  </schema>\n';
+
+  // Serialize layouts
+  schema.layouts.forEach((layout) => {
+    xml += `  <layout name="${escapeXML(layout.name)}" id="${escapeXML(layout.id)}" show_relation="${escapeXML(layout.showRelation)}">\n`;
+
+    // Serialize entity positions
+    layout.entities.forEach((entity) => {
+      xml += `    <entity schema="${escapeXML(entity.schema)}" name="${escapeXML(entity.name)}" color="${escapeXML(entity.color)}" x="${entity.x}" y="${entity.y}"/>\n`;
+    });
+
+    // Serialize groups
+    layout.groups.forEach((group) => {
+      xml += `    <group name="${escapeXML(group.name)}" color="${escapeXML(group.color)}">\n`;
+      group.entities.forEach((entityName) => {
+        xml += `      <entity name="${escapeXML(entityName)}"/>\n`;
+      });
+      xml += '    </group>\n';
+    });
+
+    xml += '  </layout>\n';
+  });
+
+  xml += '</project>\n';
+
+  return xml;
+}
+
+function escapeXML(str: string | undefined): string {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}

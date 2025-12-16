@@ -12,6 +12,7 @@ export default function SchemaViewerPage() {
   const [schema, setSchema] = useState<Schema | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filename, setFilename] = useState<string>("");
 
   useEffect(() => {
     if (!dbFile) {
@@ -21,6 +22,7 @@ export default function SchemaViewerPage() {
     }
 
     // Load the schema file from the specified path
+    setFilename(dbFile);
     fetch(`/${dbFile}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to load schema file: ${dbFile}`);
@@ -65,6 +67,6 @@ export default function SchemaViewerPage() {
       </div>
     );
   }
-
+filename={filename} 
   return <SchemaCanvas schema={schema} layoutIndex={0} />;
 }
