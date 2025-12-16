@@ -24,9 +24,13 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [activeTable, setActiveTable] = useState<string | null>(null);
+  const [mutableSchema, setMutableSchema] = useState<Schema>(schema);
 
-  const layout = schema.layouts[layoutIndex];
-
+  const layout = mutableSchema.layouts[layoutIndex];
+  // Update mutable schema when prop changes
+  useEffect(() => {
+    setMutableSchema(schema);
+  }, [schema]);
   // Initialize table positions from layout
   useEffect(() => {
     if (!layout) return;
@@ -73,6 +77,67 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
 
   const handleTableClick = (tableName: string) => {
     setActiveTable(tableName);
+  };
+
+  const handleMoveColumnUp = (tableName: string, columnIndex: number) => {
+    if (columnIndex === 0) return; // Already at top
+    
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const newColumns = [...newTable.columns];
+      [newColumns[columnIndex - 1], newColumns[columnIndex]] = 
+        [newColumns[columnIndex], newColumns[columnIndex - 1]];
+      
+      newTable.columns = newColumns;
+      newSchema.tables = [...newSchema.tables];
+      newSchema.tables[tableIndex] = newTable;
+      
+      return newSchema;
+    });
+  };
+
+  const handleMoveColumnDown = (tableName: string, columnIndex: number) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const table = newSchema.tables[tableIndex];
+      if (columnIndex >= table.columns.length - 1) return prevSchema; // Already at bottom
+      
+      const newTable = { ...table };
+      const newColumns = [...newTable.columns];
+      [newColumns[columnIndex], newColumns[columnIndex + 1]] = 
+        [newColumns[columnIndex + 1], newColumns[columnIndex]];
+      
+      newTable.columns = newColumns;
+      newSchema.tables = [...newSchema.tables];
+      newSchema.tables[tableIndex] = newTable;
+      
+      return newSchema;
+    });
+  };
+
+  const handleRemoveColumn = (tableName: string, columnIndex: number) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const newColumns = [...newTable.columns];
+      newColumns.splice(columnIndex, 1);
+      
+      newTable.columns = newColumns;
+      newSchema.tables = [...newSchema.tables];
+      newSchema.tables[tableIndex] = newTable;
+      
+      return newSchema;
+    });
   };
 
   // Pan functionality
@@ -197,10 +262,10 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
       {/* Controls */}
       <div className="absolute top-4 left-4 z-50 bg-white rounded-lg shadow-lg p-2 space-y-2">
         <div className="text-xs font-semibold text-gray-700">
-          {schema.projectName} - {layout.name}
+          {mutableSchema.projectName} - {layout.name}
         </div>
         <div className="text-xs text-gray-500">
-          Tables: {schema.tables.length}
+          Tables: {mutableSchema.tables.length}
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -255,10 +320,10 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
           {renderGroups()}
 
           {/* Render relationship lines */}
-          <RelationshipLines tables={schema.tables} tablePositions={tablePositions} />
+          <RelationshipLines tables={mutableSchema.tables} tablePositions={tablePositions} />
 
           {/* Render tables */}
-          {schema.tables.map((table) => {
+          {mutableSchema.tables.map((table) => {
             const position = tablePositions.get(table.name);
             if (!position) return null;
 
@@ -270,10 +335,14 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
                 y={position.y}
                 color={getTableColor(table.name)}
                 isActive={activeTable === table.name}
+                isSelected={activeTable === table.name}
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
                 onClick={handleTableClick}
+                onMoveColumnUp={handleMoveColumnUp}
+                onMoveColumnDown={handleMoveColumnDown}
+                onRemoveColumn={handleRemoveColumn}
               />
             );
           })}

@@ -9,10 +9,14 @@ interface TableNodeProps {
   y: number;
   color: string;
   isActive: boolean;
+  isSelected: boolean;
   onDragStart: (tableName: string, x: number, y: number) => void;
   onDragMove: (tableName: string, x: number, y: number) => void;
   onDragEnd: (tableName: string, x: number, y: number) => void;
   onClick: (tableName: string) => void;
+  onMoveColumnUp: (tableName: string, columnIndex: number) => void;
+  onMoveColumnDown: (tableName: string, columnIndex: number) => void;
+  onRemoveColumn: (tableName: string, columnIndex: number) => void;
 }
 
 export function TableNode({
@@ -21,10 +25,14 @@ export function TableNode({
   y,
   color,
   isActive,
+  isSelected,
   onDragStart,
   onDragMove,
   onDragEnd,
   onClick,
+  onMoveColumnUp,
+  onMoveColumnDown,
+  onRemoveColumn,
 }: TableNodeProps) {
   const [isDragging, setIsDragging] = React.useState(false);
   const [position, setPosition] = React.useState({ x, y });
@@ -114,15 +122,22 @@ export function TableNode({
       }}
     >
       <div
-        className="rounded-lg shadow-lg border-2 border-gray-400 overflow-hidden min-w-[200px] max-w-[300px]"
-        style={{ backgroundColor: `#${color}` }}
+        className="rounded-lg shadow-lg overflow-hidden min-w-[200px] max-w-[300px]"
+        style={{ 
+          backgroundColor: `#${color}`,
+          borderWidth: '2px',
+          borderStyle: 'solid',
+          borderColor: isSelected ? '#3b82f6' : '#9ca3af'
+        }}
       >
         {/* Table Header */}
         <div
           className="px-3 py-2 bg-gray-800 text-white font-bold text-sm cursor-grab active:cursor-grabbing"
+          style={{ backgroundColor: isSelected ? '#1e40af' : '#1f2937' }}
           onMouseDown={handleMouseDown}
         >
           {table.name}
+          {isSelected && <span className="ml-2 text-xs">(selected)</span>}
         </div>
 
         {/* Columns */}
@@ -130,7 +145,7 @@ export function TableNode({
           {table.columns.map((column, index) => (
             <div
               key={index}
-              className="px-3 py-1 text-xs border-b border-gray-200 last:border-b-0 flex items-center gap-1"
+              className="px-3 py-1 text-xs border-b border-gray-200 last:border-b-0 flex items-center gap-1 group"
               title={column.comment}
             >
               <span className="text-base leading-none">{getColumnIcon(column)}</span>
@@ -141,6 +156,44 @@ export function TableNode({
                 {column.type}
                 {column.length ? `(${column.length})` : ""}
               </span>
+              
+              {/* Column controls - only show when selected */}
+              {isSelected && (
+                <div className="flex gap-1 ml-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMoveColumnUp(table.name, index);
+                    }}
+                    disabled={index === 0}
+                    className="px-1 py-0.5 text-[10px] bg-blue-100 hover:bg-blue-200 disabled:bg-gray-100 disabled:text-gray-400 rounded"
+                    title="Move up"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMoveColumnDown(table.name, index);
+                    }}
+                    disabled={index === table.columns.length - 1}
+                    className="px-1 py-0.5 text-[10px] bg-blue-100 hover:bg-blue-200 disabled:bg-gray-100 disabled:text-gray-400 rounded"
+                    title="Move down"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveColumn(table.name, index);
+                    }}
+                    className="px-1 py-0.5 text-[10px] bg-red-100 hover:bg-red-200 text-red-700 rounded"
+                    title="Remove column"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
