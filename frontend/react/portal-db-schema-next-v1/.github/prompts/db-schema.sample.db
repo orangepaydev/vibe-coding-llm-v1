@@ -1,0 +1,654 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="MySql" database="MySql" id="Project-da" >
+	<schema name="portal" >
+		<table name="auth_audit_log" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="ent_org_id" type="INT" length="11" jt="4" />
+			<column name="remark" type="TEXT" jt="-1" />
+			<column name="user_id" type="INT" length="11" jt="4" />
+			<column name="resource_id" type="INT" length="11" jt="4" />
+			<column name="audit_type" type="INT" length="11" jt="4" >
+				<comment><![CDATA[Audit Type: 1-Enquiry 2-Edit/Submission 3-Approval]]></comment>
+			</column>
+			<column name="status_code" type="INT" length="11" jt="4" />
+			<column name="request_detail_id" type="INT" length="11" jt="4" />
+			<column name="request_url" type="VARCHAR" length="2048" jt="12" />
+			<column name="created_timestamp" type="TIMESTAMP" jt="93" mandatory="y" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<column name="created_user" type="INT" length="11" jt="4" />
+			<column name="user_group_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[User group id as of creating audit record]]></comment>
+			</column>
+			<column name="ip_address" type="VARCHAR" length="40" jt="12" >
+				<comment><![CDATA[supports either IPV4 or IPV6 ip address]]></comment>
+			</column>
+			<index name="pk_auth_audit_log" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_auth_audit_log_ent_org" unique="NORMAL" >
+				<column name="ent_org_id" />
+			</index>
+			<index name="fk_auth_audit_log_auth_user" unique="NORMAL" >
+				<column name="user_id" />
+			</index>
+			<index name="fk_auth_audit_log_auth_resource" unique="NORMAL" >
+				<column name="resource_id" />
+			</index>
+			<fk name="fk_auth_audit_log_auth_resource" to_schema="portal" to_table="auth_resource" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="resource_id" pk="id" />
+			</fk>
+			<fk name="fk_auth_audit_log_auth_user" to_schema="portal" to_table="auth_user" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="user_id" pk="id" />
+			</fk>
+			<fk name="fk_auth_audit_log_ent_org" to_schema="portal" to_table="ent_org" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="ent_org_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="auth_resource" row_count="2" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="parent_module" type="VARCHAR" length="100" jt="12" >
+				<comment><![CDATA[Parent Module]]></comment>
+			</column>
+			<column name="module" type="VARCHAR" length="200" jt="12" mandatory="y" />
+			<column name="entity_type" type="INT" length="11" jt="4" mandatory="y" >
+				<comment><![CDATA[Indicate selectable entity type:
+ 1 - OPR
+2 - SM
+3 - both]]></comment>
+			</column>
+			<column name="system_type" type="INT" length="11" jt="4" mandatory="y" >
+				<comment><![CDATA[Indicate system type:
+ 1 - Bank
+2 - Opr]]></comment>
+			</column>
+			<column name="name" type="VARCHAR" length="100" jt="12" mandatory="y" />
+			<column name="function_name" type="VARCHAR" length="100" jt="12" >
+				<comment><![CDATA[Function Name that show up in user group and profile page]]></comment>
+			</column>
+			<column name="action" type="VARCHAR" length="100" jt="12" />
+			<column name="remark" type="VARCHAR" length="200" jt="12" />
+			<column name="resource_uri" type="VARCHAR" length="100" jt="12" mandatory="y" />
+			<column name="resource_type" type="VARCHAR" length="20" jt="12" mandatory="y" />
+			<column name="audit_uri" type="VARCHAR" length="100" jt="12" >
+				<comment><![CDATA[URI of audit page to display changes]]></comment>
+			</column>
+			<column name="viewable" type="INT" length="11" jt="4" >
+				<defo><![CDATA[0]]></defo>
+				<comment><![CDATA[viewable in token]]></comment>
+			</column>
+			<column name="optional" type="INT" length="11" jt="4" >
+				<defo><![CDATA[0]]></defo>
+				<comment><![CDATA[only optional=Y allowed to configure in user group]]></comment>
+			</column>
+			<column name="audit_message_template_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[audit message]]></comment>
+			</column>
+			<column name="seq_no" type="INT" length="11" jt="4" >
+				<defo><![CDATA[0]]></defo>
+				<comment><![CDATA[Order sequence]]></comment>
+			</column>
+			<column name="rec_status" type="INT" length="11" jt="4" >
+				<defo><![CDATA[1]]></defo>
+				<comment><![CDATA[status of the record
+0 - Active(Approved)
+1 - Pending Approval
+2 - Rejected
+3 - Inactive
+4 - Pending Delete
+5 - Delete Rejected]]></comment>
+			</column>
+			<column name="maint_table_name" type="VARCHAR" length="100" jt="12" >
+				<comment><![CDATA[Detail table name  for maintenance]]></comment>
+			</column>
+			<column name="resource_code" type="VARCHAR" length="20" jt="12" >
+				<comment><![CDATA[code for each auth resource e.g. txn search page menu item, txn search page button]]></comment>
+			</column>
+			<index name="pk_auth_resource" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB ]]></options>
+		</table>
+		<table name="auth_user" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="ent_org_id" type="INT" length="11" jt="4" />
+			<column name="username" type="VARCHAR" length="100" jt="12" mandatory="y" >
+				<comment><![CDATA[Username]]></comment>
+			</column>
+			<column name="display_name" type="VARCHAR" length="100" jt="12" >
+				<comment><![CDATA[Display name]]></comment>
+			</column>
+			<column name="created_timestamp" type="TIMESTAMP" jt="93" mandatory="y" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<column name="created_user" type="INT" length="11" jt="4" />
+			<column name="active_version" type="INT" length="11" jt="4" >
+				<defo><![CDATA[0]]></defo>
+			</column>
+			<column name="session_key" type="VARCHAR" length="64" jt="12" >
+				<comment><![CDATA[session key for the current user]]></comment>
+			</column>
+			<column name="user_type" type="INT" jt="4" >
+				<comment><![CDATA[100  - auth0
+200 - username / password]]></comment>
+			</column>
+			<index name="pk_auth_user" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_auth_user_entity_id" unique="NORMAL" >
+				<column name="ent_org_id" />
+			</index>
+			<index name="unq_auth_user" unique="UNIQUE_KEY" >
+				<column name="username" />
+				<column name="user_type" />
+			</index>
+			<fk name="fk_auth_user_ent_org" to_schema="portal" to_table="ent_org" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="ent_org_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="auth_user_credential" prior="auth_user_p" >
+			<column name="id" type="INT" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="auth_user_id" type="INT" jt="4" />
+			<column name="password_hash" type="VARCHAR" length="128" jt="12" />
+			<column name="created_timestamp" type="DATETIME" jt="93" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<index name="pk_auth_user_credential" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<fk name="fk_auth_user_credential_auth_user" to_schema="portal" to_table="auth_user" >
+				<fk_column name="auth_user_id" pk="id" />
+			</fk>
+			<options><![CDATA[engine=InnoDB]]></options>
+		</table>
+		<table name="auth_user_detail" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="auth_user_id" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="user_status" type="INT" length="11" jt="4" >
+				<defo><![CDATA[0]]></defo>
+				<comment><![CDATA[User status 0 - Active
+1 - Inactive
+2 - Suspended]]></comment>
+			</column>
+			<column name="email" type="VARCHAR" length="255" jt="12" >
+				<comment><![CDATA[user email]]></comment>
+			</column>
+			<column name="mobile_prefix" type="VARCHAR" length="4" jt="12" />
+			<column name="mobile_no" type="VARCHAR" length="30" jt="12" />
+			<column name="created_timestamp" type="TIMESTAMP" jt="93" mandatory="y" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<column name="created_user" type="INT" length="11" jt="4" />
+			<index name="pk_auth_user_detail" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_auth_user_auth_user_id" unique="NORMAL" >
+				<column name="auth_user_id" />
+			</index>
+			<fk name="fk_auth_user_detail_auth_user" to_schema="portal" to_table="auth_user" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="auth_user_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="auth_user_group" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="user_group_code" type="VARCHAR" length="30" jt="12" >
+				<comment><![CDATA[the key for the user group matched with the auth provider]]></comment>
+			</column>
+			<column name="ent_org_id" type="INT" length="11" jt="4" />
+			<column name="entity_type" type="INT" length="11" jt="4" >
+				<comment><![CDATA[Indicate entity type, 1-OPR, 2-SM]]></comment>
+			</column>
+			<column name="is_admin" type="INT" length="11" jt="4" mandatory="y" >
+				<defo><![CDATA[0]]></defo>
+				<comment><![CDATA[Indicate admin group, 0-Non-admin, 1-Admin]]></comment>
+			</column>
+			<column name="is_maintainable" type="INT" length="11" jt="4" mandatory="y" >
+				<defo><![CDATA[1]]></defo>
+				<comment><![CDATA[Indicate maintainable, 0-Non-maintainable, 1-Maintainable]]></comment>
+			</column>
+			<column name="created_timestamp" type="TIMESTAMP" jt="93" mandatory="y" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<column name="created_user" type="INT" length="11" jt="4" />
+			<column name="active_version" type="INT" length="11" jt="4" >
+				<defo><![CDATA[0]]></defo>
+			</column>
+			<index name="pk_auth_user_group" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_auth_user_group_entity_id" unique="NORMAL" >
+				<column name="ent_org_id" />
+			</index>
+			<fk name="fk_auth_user_group_ent_org" to_schema="portal" to_table="ent_org" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="ent_org_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB ]]></options>
+		</table>
+		<table name="auth_user_group_detail" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="user_group_id" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="name" type="VARCHAR" length="100" jt="12" >
+				<comment><![CDATA[User group name]]></comment>
+			</column>
+			<column name="remark" type="VARCHAR" length="200" jt="12" />
+			<column name="audit_trail_rights" type="INT" length="11" jt="4" >
+				<comment><![CDATA[To indicate privilege in audit page]]></comment>
+			</column>
+			<column name="reject_reason" type="VARCHAR" length="200" jt="12" />
+			<column name="created_timestamp" type="TIMESTAMP" jt="93" mandatory="y" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<column name="created_user" type="INT" length="11" jt="4" />
+			<index name="pk_auth_user_group_detail" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_auth_user_group_detail_user_group_id" unique="NORMAL" >
+				<column name="user_group_id" />
+			</index>
+			<fk name="fk_auth_user_group_detail_auth_user_group" to_schema="portal" to_table="auth_user_group" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="user_group_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB ]]></options>
+		</table>
+		<table name="auth_user_group_member" row_count="0" spec="" >
+			<comment><![CDATA[links the auth_user_detail to the user_group membership]]></comment>
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="auth_user_id" type="INT" length="11" jt="4" />
+			<column name="auth_user_group_id" type="INT" length="11" jt="4" />
+			<column name="auth_user_detail_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[point to the auth_user_detail record]]></comment>
+			</column>
+			<index name="pk_auth_user_group_member" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_auth_user_group_member_auth_user" unique="NORMAL" >
+				<column name="auth_user_id" />
+			</index>
+			<index name="fk_auth_user_group_member_auth_user_group" unique="NORMAL" >
+				<column name="auth_user_group_id" />
+			</index>
+			<index name="fk_auth_user_group_member_auth_user_detail" unique="NORMAL" >
+				<column name="auth_user_detail_id" />
+			</index>
+			<fk name="fk_auth_user_group_member_auth_user" to_schema="portal" to_table="auth_user" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="auth_user_id" pk="id" />
+			</fk>
+			<fk name="fk_auth_user_group_member_auth_user_detail" to_schema="portal" to_table="auth_user_detail" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="auth_user_detail_id" pk="id" />
+			</fk>
+			<fk name="fk_auth_user_group_member_auth_user_group" to_schema="portal" to_table="auth_user_group" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="auth_user_group_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="auth_user_group_resource" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="user_group_id" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="resource_id" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="action" type="CHAR" length="1" jt="1" >
+				<comment><![CDATA[n - no permission
+r - read
+w - write
+c - checker
+a - admin]]></comment>
+			</column>
+			<index name="pk_auth_user_group_resource" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_auth_user_group_resource_user_group_detail_id" unique="NORMAL" >
+				<column name="user_group_id" />
+			</index>
+			<index name="fk_auth_user_group_resource_resource_id" unique="NORMAL" >
+				<column name="resource_id" />
+			</index>
+			<fk name="fk_auth_user_group_resource_auth_resource" to_schema="portal" to_table="auth_resource" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="resource_id" pk="id" />
+			</fk>
+			<fk name="fk_auth_user_group_resource_auth_user_group_detail" to_schema="portal" to_table="auth_user_group" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="user_group_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB ]]></options>
+		</table>
+		<table name="ent_org" prior="ent_org" row_count="3" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="org_code" type="VARCHAR" length="100" jt="12" >
+				<comment><![CDATA[Participant Code]]></comment>
+			</column>
+			<column name="ent_type" type="INT" length="11" jt="4" >
+				<comment><![CDATA[Indicate entity type, 
+
+1 - Operator
+2 - Participant]]></comment>
+			</column>
+			<column name="active_version" type="INT" length="11" jt="4" />
+			<column name="created_user" type="INT" length="11" jt="4" />
+			<column name="created_timestamp" prior="created_dt" type="DATETIME" jt="93" mandatory="y" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<index name="pk_ent_org" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="ent_org_org_code_idx" unique="NORMAL" >
+				<column name="org_code" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB ]]></options>
+		</table>
+		<table name="ent_org_detail" prior="ent_org_detail" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="ent_org_id" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="name" type="VARCHAR" length="100" jt="12" />
+			<column name="printed_name" type="VARCHAR" length="100" jt="12" />
+			<column name="short_code" type="VARCHAR" length="100" jt="12" />
+			<column name="admin_user_id_1" type="INT" length="11" jt="4" />
+			<column name="admin_user_id_2" type="INT" length="11" jt="4" />
+			<column name="created_user" type="INT" length="11" jt="4" />
+			<column name="created_timestamp" prior="created_dt" type="DATETIME" jt="93" mandatory="y" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<index name="pk_ent_org_detail" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_ent_org_detail_entity_id" unique="NORMAL" >
+				<column name="ent_org_id" />
+			</index>
+			<fk name="fk_ent_org_detail_ent_org" to_schema="portal" to_table="ent_org" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="ent_org_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="menu_component_resource_mapping" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="react_component_name" type="VARCHAR" length="100" jt="12" mandatory="y" />
+			<column name="resource_id" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="path" type="VARCHAR" length="50" jt="12" />
+			<index name="pk_menu_component_resource_mapping" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_menu_component_resource_mapping_resource_id" unique="NORMAL" >
+				<column name="resource_id" />
+			</index>
+			<fk name="fk_menu_component_resource_mapping_auth_resource" to_schema="portal" to_table="auth_resource" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="resource_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB ]]></options>
+		</table>
+		<table name="sys_approval_audit" row_count="0" spec="" >
+			<comment><![CDATA[the history of the approval request]]></comment>
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="sys_approval_id" type="INT" length="11" jt="4" />
+			<column name="user_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[the id of the person who trigger the action]]></comment>
+			</column>
+			<column name="action_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[100 - maker created record
+110 - maker cancle
+1000 - check approved
+1010 - check rejected
+2000 - approver level 1 approved
+2010 - approver level 1 rejected
+3000 - approver level 2 approved
+3010 - approver level 2 rejected]]></comment>
+			</column>
+			<column name="remark" type="VARCHAR" length="200" jt="12" />
+			<column name="created_timestamp" prior="created_dt" type="DATETIME" jt="93" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+				<comment><![CDATA[date time of the audit]]></comment>
+			</column>
+			<index name="pk_sys_approval_audit" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_sys_approval_audit_sys_approval_request" unique="NORMAL" >
+				<column name="sys_approval_id" />
+			</index>
+			<fk name="fk_sys_approval_audit_sys_approval_request" to_schema="portal" to_table="sys_approval_request" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="sys_approval_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="sys_approval_level" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="required_level" type="INT" length="11" jt="4" >
+				<defo><![CDATA[200]]></defo>
+				<comment><![CDATA[10 - maker only, only maker is required to process this record
+100 - checker only
+200 - approval level 1, needs approval all the way up to level 1
+300 - approver level 2, need approval all the way up to level 2]]></comment>
+			</column>
+			<column name="ent_org_id" type="INT" length="11" jt="4" />
+			<column name="resource_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[0 - common for all resources
+100 - ent_org]]></comment>
+			</column>
+			<column name="created_user" prior="created_user_id" type="INT" length="11" jt="4" />
+			<column name="created_timestamp" prior="created_dt" type="DATETIME" jt="93" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<column name="modified_user" prior="modified_user_id" type="INT" length="11" jt="4" />
+			<column name="modified_timestamp" prior="modified_dt" type="DATETIME" jt="93" >
+				<column_options><![CDATA[ON UPDATE CURRENT_TIMESTAMP]]></column_options>
+			</column>
+			<index name="pk_sys_approval_level" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="sys_approval_matrix" row_count="0" spec="" >
+			<comment><![CDATA[contains a relationshiop of  the maker, checker and approver for each resources]]></comment>
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="ent_org_id" type="INT" length="11" jt="4" />
+			<column name="user_group_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[the user group that could perform this action]]></comment>
+			</column>
+			<column name="resource_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[0 - common for all resources
+100 - ent_org]]></comment>
+			</column>
+			<column name="role" type="INT" length="11" jt="4" >
+				<comment><![CDATA[100 - maker only
+200 - checker only
+300 - maker and checker
+400 - approver level 1
+500 - approver level 2]]></comment>
+			</column>
+			<index name="pk_sys_approval_matrix" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_sys_approval_matrix_comp" unique="NORMAL" >
+				<column name="ent_org_id" />
+			</index>
+			<index name="fk_sys_approval_matrix" unique="NORMAL" >
+				<column name="user_group_id" />
+			</index>
+			<fk name="fk_sys_approval_matrix" to_schema="portal" to_table="auth_user_group" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="user_group_id" pk="id" />
+			</fk>
+			<fk name="fk_sys_approval_matrix_comp" to_schema="portal" to_table="ent_org" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="ent_org_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="sys_approval_request" row_count="0" spec="" >
+			<comment><![CDATA[Store all the request that needs approval]]></comment>
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="maker_user" prior="maker_user_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[the user who is requesting this approval]]></comment>
+			</column>
+			<column name="maker_timestamp" prior="maker_dt" type="DATETIME" jt="93" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<column name="request_status" type="INT" length="11" jt="4" >
+				<defo><![CDATA[100]]></defo>
+				<comment><![CDATA[110 - maker cancel
+200 - pending Checker
+210 - rejected by Checker
+400 - pending approver level 1
+410 - rejected by approver level 1
+500 - pending approver level 2
+510 - rejected by approver level 2
+600 - approved]]></comment>
+			</column>
+			<column name="reference_type" type="INT" jt="4" >
+				<comment><![CDATA[100 - sys_param]]></comment>
+			</column>
+			<column name="reference_id" type="INT" length="11" jt="4" >
+				<comment><![CDATA[depending on reference_type]]></comment>
+			</column>
+			<column name="reference_id_version" type="INT" jt="4" >
+				<comment><![CDATA[the version that needs to be activated]]></comment>
+			</column>
+			<column name="approval_status" type="INT" length="11" jt="4" >
+				<defo><![CDATA[1]]></defo>
+				<comment><![CDATA[1 - active, pending approval
+2 - approved
+3 - cancel / rejected]]></comment>
+			</column>
+			<index name="pk_sys_approval_request" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_sys_approval_request_auth_user" unique="NORMAL" >
+				<column name="maker_user" />
+			</index>
+			<fk name="fk_sys_approval_request_auth_user" to_schema="portal" to_table="auth_user" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="maker_user" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="sys_param" row_count="0" spec="" >
+			<comment><![CDATA[System Parameter]]></comment>
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="param_category" type="INT" length="11" jt="4" mandatory="y" >
+				<comment><![CDATA[Indicate parameter category
+1 - Group 1 - User defined  Parameters for Payout 
+2 - Group 2 -  System Parameters  for Processing]]></comment>
+			</column>
+			<column name="param_code" type="VARCHAR" length="100" jt="12" >
+				<comment><![CDATA[Parameter code]]></comment>
+			</column>
+			<column name="param_type" type="VARCHAR" length="100" jt="12" mandatory="y" />
+			<column name="created_timestamp" type="TIMESTAMP" jt="93" mandatory="y" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<column name="created_user" type="INT" length="11" jt="4" />
+			<column name="active_version" type="INT" length="11" jt="4" >
+				<defo><![CDATA[0]]></defo>
+			</column>
+			<index name="pk_sys_param" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+		<table name="sys_param_detail" row_count="0" spec="" >
+			<column name="id" type="INT" length="11" jt="4" mandatory="y" >
+				<identity><![CDATA[AUTO_INCREMENT]]></identity>
+			</column>
+			<column name="param_id" type="INT" length="11" jt="4" mandatory="y" />
+			<column name="param_description" type="VARCHAR" length="200" jt="12" >
+				<comment><![CDATA[Parameter description]]></comment>
+			</column>
+			<column name="remark" type="VARCHAR" length="200" jt="12" />
+			<column name="created_timestamp" type="TIMESTAMP" jt="93" mandatory="y" >
+				<defo><![CDATA[current_timestamp()]]></defo>
+			</column>
+			<column name="created_user" type="INT" length="11" jt="4" />
+			<column name="param_value" prior="pram_value" type="VARCHAR" length="100" jt="12" />
+			<column name="status" type="INT" jt="4" >
+				<defo><![CDATA[0]]></defo>
+				<comment><![CDATA[Record
+0 - Active
+1 - Inactive]]></comment>
+			</column>
+			<index name="pk_sys_param_detail" unique="PRIMARY_KEY" >
+				<column name="id" />
+			</index>
+			<index name="fk_system_parameter_detail_param_id" unique="NORMAL" >
+				<column name="param_id" />
+			</index>
+			<fk name="fk_sys_param_detail_sys_param" to_schema="portal" to_table="sys_param" options="ON DELETE NO ACTION ON UPDATE NO ACTION" >
+				<fk_column name="param_id" pk="id" />
+			</fk>
+			<options><![CDATA[ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci]]></options>
+		</table>
+	</schema>
+	<layout name="Main Layout" id="Layout-171b" show_relation="columns" >
+		<entity schema="portal" name="auth_audit_log" color="C7F4BE" x="323" y="646" />
+		<entity schema="portal" name="auth_resource" color="C7F4BE" x="527" y="85" />
+		<entity schema="portal" name="auth_user" color="C7F4BE" x="68" y="85" />
+		<entity schema="portal" name="auth_user_credential" color="C7F4BE" x="51" y="629" />
+		<entity schema="portal" name="auth_user_detail" color="C7F4BE" x="51" y="357" />
+		<entity schema="portal" name="auth_user_group" color="F4DDBE" x="527" y="629" />
+		<entity schema="portal" name="auth_user_group_detail" color="F4DDBE" x="765" y="646" />
+		<entity schema="portal" name="auth_user_group_member" color="C7F4BE" x="289" y="187" />
+		<entity schema="portal" name="auth_user_group_resource" color="C7F4BE" x="527" y="459" />
+		<entity schema="portal" name="ent_org" color="F4DDBE" x="1479" y="102" />
+		<entity schema="portal" name="ent_org_detail" color="F4DDBE" x="1462" y="340" />
+		<entity schema="portal" name="menu_component_resource_mapping" color="C7F4BE" x="799" y="85" />
+		<entity schema="portal" name="sys_approval_audit" color="D1BEF4" x="2193" y="357" />
+		<entity schema="portal" name="sys_approval_level" color="D1BEF4" x="2176" y="595" />
+		<entity schema="portal" name="sys_approval_matrix" color="D1BEF4" x="2193" y="85" />
+		<entity schema="portal" name="sys_approval_request" color="D1BEF4" x="1955" y="85" />
+		<entity schema="portal" name="sys_param" color="D1BEF4" x="2414" y="357" />
+		<entity schema="portal" name="sys_param_detail" color="D1BEF4" x="2669" y="357" />
+		<group name="sys_approval_request" color="F0ECF7" >
+			<entity schema="portal" name="sys_approval_matrix" />
+			<entity schema="portal" name="sys_param" />
+			<entity schema="portal" name="sys_param_detail" />
+			<entity schema="portal" name="sys_approval_request" />
+			<entity schema="portal" name="sys_approval_audit" />
+			<entity schema="portal" name="sys_approval_level" />
+		</group>
+		<group name="ent_org" color="F7F2EC" >
+			<entity schema="portal" name="ent_org_detail" />
+			<entity schema="portal" name="ent_org" />
+		</group>
+		<group name="auth_user" color="EEF7EC" >
+			<entity schema="portal" name="auth_resource" />
+			<entity schema="portal" name="auth_user_group_member" />
+			<entity schema="portal" name="auth_user_group_resource" />
+			<entity schema="portal" name="menu_component_resource_mapping" />
+			<entity schema="portal" name="auth_audit_log" />
+			<entity schema="portal" name="auth_user_credential" />
+			<entity schema="portal" name="auth_user" />
+			<entity schema="portal" name="auth_user_group" />
+			<entity schema="portal" name="auth_user_detail" />
+			<entity schema="portal" name="auth_user_group_detail" />
+		</group>
+	</layout>
+	<layout name="MySql" id="Layout-1ff1" show_relation="columns" />
+</project>
