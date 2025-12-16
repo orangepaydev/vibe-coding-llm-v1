@@ -199,7 +199,7 @@ export function TableNode({
       }}
     >
       <div
-        className="rounded-lg shadow-lg overflow-hidden min-w-[200px] max-w-[300px]"
+        className="rounded-lg shadow-lg overflow-hidden min-w-[200px]"
         style={{ 
           backgroundColor: `#${color}`,
           borderWidth: '2px',
@@ -217,8 +217,32 @@ export function TableNode({
           {isSelected && <span className="ml-2 text-xs">(selected)</span>}
         </div>
 
+        {/* Add Column and Delete Table buttons - only show when selected */}
+        {isSelected && (
+          <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 flex gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenAddDialog();
+              }}
+              className="flex-1 px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded"
+            >
+              + Col
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDeleteDialogOpen(true);
+              }}
+              className="flex-1 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded font-semibold"
+            >
+              🗑️ Del Table
+            </button>
+          </div>
+        )}
+
         {/* Columns */}
-        <div className="bg-white max-h-[400px] overflow-y-auto">
+        <div className="bg-white">
           {table.columns.map((column, index) => (
             <div
               key={index}
@@ -283,30 +307,6 @@ export function TableNode({
               )}
             </div>
           ))}
-          
-          {/* Add Column Button - only show when selected */}
-          {isSelected && (
-            <div className="px-3 py-2 border-t border-gray-200 space-y-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenAddDialog();
-                }}
-                className="w-full px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded"
-              >
-                + Add Column
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDeleteDialogOpen(true);
-                }}
-                className="w-full px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded font-semibold"
-              >
-                🗑️ Delete Table
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Add/Edit Column Dialog */}
