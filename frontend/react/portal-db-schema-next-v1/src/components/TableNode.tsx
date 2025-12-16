@@ -2,6 +2,15 @@
 
 import React, { useRef, useEffect } from "react";
 import { Table, Column } from "@/lib/schema-parser";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface TableNodeProps {
   table: Table;
@@ -17,6 +26,9 @@ interface TableNodeProps {
   onMoveColumnUp: (tableName: string, columnIndex: number) => void;
   onMoveColumnDown: (tableName: string, columnIndex: number) => void;
   onRemoveColumn: (tableName: string, columnIndex: number) => void;
+  onAddColumn: (tableName: string, name: string, type: string, length?: string) => void;
+  onEditColumn: (tableName: string, columnIndex: number, name: string, type: string, length?: string) => void;
+  onDeleteTable: (tableName: string) => void;
 }
 
 export function TableNode({
@@ -33,11 +45,21 @@ export function TableNode({
   onMoveColumnUp,
   onMoveColumnDown,
   onRemoveColumn,
+  onAddColumn,
+  onEditColumn,
+  onDeleteTable,
 }: TableNodeProps) {
   const [isDragging, setIsDragging] = React.useState(false);
   const [position, setPosition] = React.useState({ x, y });
   const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
   const nodeRef = useRef<HTMLDivElement>(null);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [editingColumnIndex, setEditingColumnIndex] = React.useState<number | null>(null);
+  const [newColumnName, setNewColumnName] = React.useState("");
+  const [newColumnType, setNewColumnType] = React.useState("VARCHAR");
+  const [newColumnLength, setNewColumnLength] = React.useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deleteConfirmationName, setDeleteConfirmationName] = React.useState("");
 
   useEffect(() => {
     setPosition({ x, y });
@@ -90,6 +112,61 @@ export function TableNode({
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging, dragOffset, position, table.name, onDragMove, onDragEnd]);
+
+  const handleOpenAddDialog = () => {
+    setEditingColumnIndex(null);
+    setNewColumnName("");
+    setNewColumnType("VARCHAR");
+    setNewColumnLength("");
+    setIsDialogOpen(true);
+  };
+
+  const handleOpenEditDialog = (columnIndex: number) => {
+    const column = table.columns[columnIndex];
+    setEditingColumnIndex(columnIndex);
+    setNewColumnName(column.name);
+    setNewColumnType(column.type);
+    setNewColumnLength(column.length || "");
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = () => {
+    if (!newColumnName.trim()) return;
+    
+    if (editingColumnIndex !== null) {
+      // Edit existing column
+      onEditColumn(
+        table.name,
+        editingColumnIndex,
+        newColumnName.trim(),
+        newColumnType,
+        newColumnLength.trim() || undefined
+      );
+    } else {
+      // Add new column
+      onAddColumn(
+        table.name,
+        newColumnName.trim(),
+        newColumnType,
+        newColumnLength.trim() || undefined
+      );
+    }
+    
+    // Reset form
+    setNewColumnName("");
+    setNewColumnType("VARCHAR");
+    setNewColumnLength("");
+    setEditingColumnIndex(null);
+    setIsDialogOpen(false);
+  };
+
+  const handleDeleteTable = () => {
+    if (deleteConfirmationName === table.name) {
+      onDeleteTable(table.name);
+      setIsDeleteDialogOpen(false);
+      setDeleteConfirmationName("");
+    }
+  };
 
   // Get primary key columns
   const pkIndex = table.indexes.find((idx) => idx.unique === "PRIMARY_KEY");
@@ -163,6 +240,16 @@ export function TableNode({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      handleOpenEditDialog(index);
+                    }}
+                    className="px-1 py-0.5 text-[10px] bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded"
+                    title="Edit column"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       onMoveColumnUp(table.name, index);
                     }}
                     disabled={index === 0}
@@ -196,14 +283,176 @@ export function TableNode({
               )}
             </div>
           ))}
+          
+          {/* Add Column Button - only show when selected */}
+          {isSelected && (
+            <div className="px-3 py-2 border-t border-gray-200 space-y-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenAddDialog();
+                }}
+                className="w-full px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded"
+              >
+                + Add Column
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDeleteDialogOpen(true);
+                }}
+                className="w-full px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded font-semibold"
+              >
+                🗑️ Delete Table
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Footer with stats */}
-        {table.comment && (
-          <div className="px-3 py-1 bg-gray-100 text-xs text-gray-600 italic border-t">
-            {table.comment}
-          </div>
-        )}
+        {/* Add/Edit Column Dialog */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent onClick={(e) => e.stopPropagation()}>
+            <DialogHeader>
+              <DialogTitle>
+                {editingColumnIndex !== null ? "Edit Column" : "Add Column"} in {table.name}
+              </DialogTitle>
+              <DialogDescription>
+                {editingColumnIndex !== null 
+                  ? "Modify the column details." 
+                  : "Enter the details for the new column."}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Column Name</label>
+                <input
+                  type="text"
+                  value={newColumnName}
+                  onChange={(e) => setNewColumnName(e.target.value)}
+                  placeholder="column_name"
+                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSubmit();
+                  }}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Data Type</label>
+                <select
+                  value={newColumnType}
+                  onChange={(e) => setNewColumnType(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md text-sm"
+                >
+                  <option value="VARCHAR">VARCHAR</option>
+                  <option value="INT">INT</option>
+                  <option value="BIGINT">BIGINT</option>
+                  <option value="DECIMAL">DECIMAL</option>
+                  <option value="FLOAT">FLOAT</option>
+                  <option value="DOUBLE">DOUBLE</option>
+                  <option value="DATE">DATE</option>
+                  <option value="DATETIME">DATETIME</option>
+                  <option value="TIMESTAMP">TIMESTAMP</option>
+                  <option value="TEXT">TEXT</option>
+                  <option value="BOOLEAN">BOOLEAN</option>
+                  <option value="BLOB">BLOB</option>
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Length/Size (optional)</label>
+                <input
+                  type="text"
+                  value={newColumnLength}
+                  onChange={(e) => setNewColumnLength(e.target.value)}
+                  placeholder="e.g., 255, 10,2"
+                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSubmit();
+                  }}
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <button
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  setEditingColumnIndex(null);
+                }}
+                className="px-4 py-2 text-sm border rounded-md hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!newColumnName.trim()}
+                className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {editingColumnIndex !== null ? "Save Changes" : "Add Column"}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Table Confirmation Dialog */}
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent onClick={(e) => e.stopPropagation()}>
+            <DialogHeader>
+              <DialogTitle>Delete Table: {table.name}</DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently delete the table
+                and remove all foreign key relationships that reference it.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-800 font-semibold">
+                  ⚠️ Warning: This will also remove all foreign keys referencing this table!
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Type <span className="font-bold text-red-600">{table.name}</span> to confirm:
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmationName}
+                  onChange={(e) => setDeleteConfirmationName(e.target.value)}
+                  placeholder={table.name}
+                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && deleteConfirmationName === table.name) {
+                      handleDeleteTable();
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <button
+                onClick={() => {
+                  setIsDeleteDialogOpen(false);
+                  setDeleteConfirmationName("");
+                }}
+                className="px-4 py-2 text-sm border rounded-md hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteTable}
+                disabled={deleteConfirmationName !== table.name}
+                className="px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Delete Table
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -166,6 +166,31 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     });
   };
 
+  const handleAddColumn = (tableName: string, name: string, type: string, length?: string) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const newColumns = [...newTable.columns];
+      
+      const newColumn = {
+        name,
+        type,
+        length,
+        mandatory: false,
+      };
+      
+      newColumns.push(newColumn);
+      newTable.columns = newColumns;
+      newSchema.tables = [...newSchema.tables];
+      newSchema.tables[tableIndex] = newTable;
+      
+      return newSchema;
+    });
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setSaveMessage(null);
@@ -423,6 +448,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                 onMoveColumnUp={handleMoveColumnUp}
                 onMoveColumnDown={handleMoveColumnDown}
                 onRemoveColumn={handleRemoveColumn}
+                onAddColumn={handleAddColumn}
               />
             );
           })}
