@@ -8,9 +8,11 @@ interface TableNodeProps {
   x: number;
   y: number;
   color: string;
+  isActive: boolean;
   onDragStart: (tableName: string, x: number, y: number) => void;
   onDragMove: (tableName: string, x: number, y: number) => void;
   onDragEnd: (tableName: string, x: number, y: number) => void;
+  onClick: (tableName: string) => void;
 }
 
 export function TableNode({
@@ -18,9 +20,11 @@ export function TableNode({
   x,
   y,
   color,
+  isActive,
   onDragStart,
   onDragMove,
   onDragEnd,
+  onClick,
 }: TableNodeProps) {
   const [isDragging, setIsDragging] = React.useState(false);
   const [position, setPosition] = React.useState({ x, y });
@@ -33,6 +37,9 @@ export function TableNode({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return; // Only left click
+    
+    // Bring table to front on click
+    onClick(table.name);
     
     const rect = nodeRef.current?.getBoundingClientRect();
     if (rect) {
@@ -103,7 +110,7 @@ export function TableNode({
         left: `${position.x}px`,
         top: `${position.y}px`,
         cursor: isDragging ? "grabbing" : "grab",
-        zIndex: isDragging ? 1000 : 1,
+        zIndex: isDragging ? 1000 : isActive ? 100 : 1,
       }}
     >
       <div

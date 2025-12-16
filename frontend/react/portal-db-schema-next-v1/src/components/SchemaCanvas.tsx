@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Schema, Table, EntityLayout, Group } from "@/lib/schema-parser";
 import { TableNode } from "./TableNode";
+import { RelationshipLines } from "./RelationshipLines";
 
 interface SchemaCanvasProps {
   schema: Schema;
@@ -22,6 +23,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [activeTable, setActiveTable] = useState<string | null>(null);
 
   const layout = schema.layouts[layoutIndex];
 
@@ -67,6 +69,10 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
       newPositions.set(tableName, { x, y });
       return newPositions;
     });
+  };
+
+  const handleTableClick = (tableName: string) => {
+    setActiveTable(tableName);
   };
 
   // Pan functionality
@@ -248,6 +254,9 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
           {/* Render groups */}
           {renderGroups()}
 
+          {/* Render relationship lines */}
+          <RelationshipLines tables={schema.tables} tablePositions={tablePositions} />
+
           {/* Render tables */}
           {schema.tables.map((table) => {
             const position = tablePositions.get(table.name);
@@ -260,9 +269,11 @@ export function SchemaCanvas({ schema, layoutIndex = 0 }: SchemaCanvasProps) {
                 x={position.x}
                 y={position.y}
                 color={getTableColor(table.name)}
+                isActive={activeTable === table.name}
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
+                onClick={handleTableClick}
               />
             );
           })}
