@@ -5,7 +5,7 @@ export interface Column {
   mandatory?: boolean;
   identity?: string;
   comment?: string;
-  defo?: string;
+  defaultValue?: string;
 }
 
 export interface Index {
