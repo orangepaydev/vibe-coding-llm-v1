@@ -317,6 +317,19 @@ export function TableNode({
     return "";
   };
 
+  // Determine if color is light or dark for text contrast
+  const isLightColor = (hexColor: string): boolean => {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    // Calculate relative luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5;
+  };
+
+  const headerTextColor = isLightColor(color) ? '#000000' : '#FFFFFF';
+
   return (
     <div
       ref={nodeRef}
@@ -339,8 +352,12 @@ export function TableNode({
       >
         {/* Table Header */}
         <div
-          className="px-3 py-2 bg-gray-800 text-white font-bold text-sm cursor-grab active:cursor-grabbing"
-          style={{ backgroundColor: '#1f2937' }}
+          className="px-3 py-2 font-bold text-sm cursor-grab active:cursor-grabbing"
+          style={{ 
+            backgroundColor: `#${color}`,
+            color: headerTextColor,
+            filter: 'brightness(0.85)'
+          }}
           onMouseDown={handleMouseDown}
         >
           {table.name}
