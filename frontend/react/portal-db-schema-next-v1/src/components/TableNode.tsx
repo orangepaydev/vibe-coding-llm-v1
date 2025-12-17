@@ -19,6 +19,7 @@ interface TableNodeProps {
   color: string;
   isActive: boolean;
   isSelected: boolean;
+  relationshipLabel?: string;
   onDragStart: (tableName: string, x: number, y: number) => void;
   onDragMove: (tableName: string, x: number, y: number) => void;
   onDragEnd: (tableName: string, x: number, y: number) => void;
@@ -43,6 +44,7 @@ export function TableNode({
   color,
   isActive,
   isSelected,
+  relationshipLabel,
   onDragStart,
   onDragMove,
   onDragEnd,
@@ -360,7 +362,7 @@ export function TableNode({
           }}
           onMouseDown={handleMouseDown}
         >
-          {table.name}
+          {table.name}{relationshipLabel ? ` ${relationshipLabel}` : ""}
           {isSelected && <span className="ml-2 text-xs">(selected)</span>}
         </div>
 

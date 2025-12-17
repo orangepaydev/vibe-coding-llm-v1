@@ -848,6 +848,23 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
             const position = tablePositions.get(table.name);
             if (!position) return null;
 
+            // Calculate relationship label
+            let relationshipLabel = "";
+            if (activeTable) {
+              // Check if this table has a FK to the selected table (selected table is PK)
+              const hasFKToSelected = table.foreignKeys.some(fk => fk.toTable === activeTable);
+              if (hasFKToSelected) {
+                relationshipLabel = "(FK)";
+              }
+              
+              // Check if the selected table has a FK to this table (this table is PK)
+              const selectedTableObj = mutableSchema.tables.find(t => t.name === activeTable);
+              const selectedHasFKToThis = selectedTableObj?.foreignKeys.some(fk => fk.toTable === table.name);
+              if (selectedHasFKToThis) {
+                relationshipLabel = "(PK)";
+              }
+            }
+
             return (
               <TableNode
                 key={table.name}
@@ -857,6 +874,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                 color={getTableColor(table.name)}
                 isActive={activeTable === table.name}
                 isSelected={activeTable === table.name}
+                relationshipLabel={relationshipLabel}
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
