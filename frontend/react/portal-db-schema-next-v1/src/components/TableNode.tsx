@@ -407,7 +407,7 @@ export function TableNode({
         left: `${position.x}px`,
         top: `${position.y}px`,
         cursor: isDragging ? "grabbing" : "grab",
-        zIndex: isDragging ? 1000 : isActive ? 100 : 1,
+        zIndex: isDragging ? 1000 : isActive ? 100 : 20,
       }}
     >
       <div

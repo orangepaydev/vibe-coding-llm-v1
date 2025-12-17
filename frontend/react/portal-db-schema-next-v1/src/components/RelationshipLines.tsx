@@ -116,6 +116,27 @@ export function RelationshipLines({ tables, tablePositions, tableColors, selecte
               >
                 <circle cx="4" cy="4" r="3" fill="white" stroke={hexColor} strokeWidth="1.5" />
               </marker>
+              {/* Dimmed arrow marker for unrelated connections */}
+              <marker
+                id={`arrowhead-dimmed-${color}`}
+                markerWidth="10"
+                markerHeight="10"
+                refX="9"
+                refY="3"
+                orient="auto"
+              >
+                <polygon points="0 0, 10 3, 0 6" fill={hexColor} opacity="0.2" />
+              </marker>
+              {/* Dimmed circle marker for unrelated connections */}
+              <marker
+                id={`circle-dimmed-${color}`}
+                markerWidth="8"
+                markerHeight="8"
+                refX="4"
+                refY="4"
+              >
+                <circle cx="4" cy="4" r="3" fill="white" stroke={hexColor} strokeWidth="1.5" opacity="0.2" />
+              </marker>
             </React.Fragment>
           );
         })}
@@ -130,17 +151,23 @@ export function RelationshipLines({ tables, tablePositions, tableColors, selecte
         const path = createElbowPath(start, end);
         const hexColor = rel.color.startsWith('#') ? rel.color : `#${rel.color}`;
         const isSelectedRelation = selectedTable && (rel.from === selectedTable || rel.to === selectedTable);
+        const hasSelection = selectedTable !== null;
+        const isDimmed = hasSelection && !isSelectedRelation;
 
         return (
-          <g key={`${rel.from}-${rel.to}-${index}`}>
+          <g 
+            key={`${rel.from}-${rel.to}-${index}`}
+            style={{ zIndex: isDimmed ? 1 : isSelectedRelation ? 10 : 5 }}
+          >
             <path
               d={path}
               stroke={hexColor}
               strokeWidth="6"
               fill="none"
               strokeDasharray={isSelectedRelation ? "10 5" : "none"}
-              markerEnd={`url(#arrowhead-${rel.color})`}
-              markerStart={`url(#circle-${rel.color})`}
+              opacity={isDimmed ? 0.2 : 1}
+              markerEnd={`url(#${isDimmed ? `arrowhead-dimmed-${rel.color}` : `arrowhead-${rel.color}`})`}
+              markerStart={`url(#${isDimmed ? `circle-dimmed-${rel.color}` : `circle-${rel.color}`})`}
             />
           </g>
         );
