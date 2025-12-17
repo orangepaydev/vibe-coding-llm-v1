@@ -768,6 +768,11 @@ export function TableNode({
             <DialogFooter>
               <button
                 onClick={() => {
+                  // Save table name if it has changed
+                  if (newTableName.trim() && newTableName.trim() !== table.name) {
+                    onEditTable(table.name, newTableName.trim());
+                  }
+                  // Close dialog and reset state
                   setIsEditTableDialogOpen(false);
                   setNewTableName("");
                   setEditingFKIndex(null);
@@ -775,16 +780,9 @@ export function TableNode({
                   setFkToTable("");
                   setFkColumnMappings([{name: "", pk: ""}]);
                 }}
-                className="px-4 py-2 text-sm border rounded-md hover:bg-gray-100"
+                className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
               >
-                Close
-              </button>
-              <button
-                onClick={handleEditTable}
-                disabled={!newTableName.trim() || newTableName.trim() === table.name}
-                className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                Save Table Name
+                Ok
               </button>
             </DialogFooter>
           </DialogContent>
