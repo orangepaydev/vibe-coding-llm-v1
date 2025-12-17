@@ -371,7 +371,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     }
   };
 
-  const handleEditTable = (oldTableName: string, newTableName: string) => {
+  const handleEditTable = (oldTableName: string, newTableName: string, color?: string) => {
     setMutableSchema((prevSchema) => {
       const newSchema = { ...prevSchema };
       
@@ -394,12 +394,12 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
         ),
       }));
       
-      // Update in layouts
+      // Update in layouts (name and color)
       newSchema.layouts = newSchema.layouts.map((layout) => ({
         ...layout,
         entities: layout.entities.map((e) => 
           e.name === oldTableName 
-            ? { ...e, name: newTableName }
+            ? { ...e, name: newTableName, color: color || e.color }
             : e
         ),
         groups: layout.groups.map((group) => ({

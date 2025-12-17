@@ -29,7 +29,7 @@ interface TableNodeProps {
   onAddColumn: (tableName: string, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string, comment?: string) => void;
   onEditColumn: (tableName: string, columnIndex: number, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string, comment?: string) => void;
   onDeleteTable: (tableName: string) => void;
-  onEditTable: (oldTableName: string, newTableName: string) => void;
+  onEditTable: (oldTableName: string, newTableName: string, color?: string) => void;
   onAddForeignKey: (tableName: string, fkName: string, toTable: string, columns: Array<{name: string, pk: string}>) => void;
   onEditForeignKey: (tableName: string, fkIndex: number, fkName: string, toTable: string, columns: Array<{name: string, pk: string}>) => void;
   onRemoveForeignKey: (tableName: string, fkIndex: number) => void;
@@ -77,6 +77,7 @@ export function TableNode({
   const [deleteConfirmationName, setDeleteConfirmationName] = React.useState("");
   const [isEditTableDialogOpen, setIsEditTableDialogOpen] = React.useState(false);
   const [newTableName, setNewTableName] = React.useState("");
+  const [tableColor, setTableColor] = React.useState("");
   const [editingFKIndex, setEditingFKIndex] = React.useState<number | null>(null);
   const [fkName, setFkName] = React.useState("");
   const [fkToTable, setFkToTable] = React.useState("");
@@ -216,6 +217,7 @@ export function TableNode({
 
   const handleOpenEditTableDialog = () => {
     setNewTableName(table.name);
+    setTableColor(color);
     // Reset foreign key editing state
     setEditingFKIndex(null);
     setFkName("");
@@ -280,9 +282,19 @@ export function TableNode({
 
   const handleEditTable = () => {
     if (newTableName.trim() && newTableName.trim() !== table.name) {
-      onEditTable(table.name, newTableName.trim());
+      onEditTable(table.name, newTableName.trim(), tableColor);
       setIsEditTableDialogOpen(false);
       setNewTableName("");
+      setTableColor("");
+    } else if (tableColor !== color) {
+      // Only color changed
+      onEditTable(table.name, table.name, tableColor);
+      setIsEditTableDialogOpen(false);
+      setTableColor("");
+    } else {
+      setIsEditTableDialogOpen(false);
+      setNewTableName("");
+      setTableColor("");
     }
   };
 
@@ -322,13 +334,13 @@ export function TableNode({
           backgroundColor: `#${color}`,
           borderWidth: '2px',
           borderStyle: 'solid',
-          borderColor: isSelected ? '#3b82f6' : '#9ca3af'
+          borderColor: '#9ca3af'
         }}
       >
         {/* Table Header */}
         <div
           className="px-3 py-2 bg-gray-800 text-white font-bold text-sm cursor-grab active:cursor-grabbing"
-          style={{ backgroundColor: isSelected ? '#1e40af' : '#1f2937' }}
+          style={{ backgroundColor: '#1f2937' }}
           onMouseDown={handleMouseDown}
         >
           {table.name}
@@ -611,6 +623,52 @@ export function TableNode({
                 />
               </div>
 
+              {/* Table Color Section */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Table Color
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={`#${tableColor}`}
+                    onChange={(e) => setTableColor(e.target.value.substring(1))}
+                    className="h-10 w-20 border rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={tableColor}
+                    onChange={(e) => setTableColor(e.target.value.replace(/[^0-9A-Fa-f]/g, '').substring(0, 6))}
+                    placeholder="FFFFFF"
+                    maxLength={6}
+                    className="flex-1 px-3 py-2 border rounded-md text-sm font-mono uppercase"
+                  />
+                  <div
+                    className="h-10 w-20 border rounded-md"
+                    style={{ backgroundColor: `#${tableColor}` }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-500">Preset colors:</p>
+                  <div className="grid grid-cols-12 gap-1">
+                    {['E3F2FD', 'F3E5F5', 'FCE4EC', 'FFF3E0', 'E8F5E9', 'FFF9C4', 'FFE0B2', 'FFCCBC', 'D7CCC8', 'CFD8DC', 'F5F5F5', 'EEEEEE'].map((presetColor) => (
+                      <button
+                        key={presetColor}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTableColor(presetColor);
+                        }}
+                        className="h-8 w-full border rounded cursor-pointer hover:scale-110 transition-transform"
+                        style={{ backgroundColor: `#${presetColor}` }}
+                        title={`#${presetColor}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">Enter hex color code without #</p>
+              </div>
+
               {/* Foreign Keys Section */}
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex items-center justify-between">
@@ -768,13 +826,14 @@ export function TableNode({
             <DialogFooter>
               <button
                 onClick={() => {
-                  // Save table name if it has changed
-                  if (newTableName.trim() && newTableName.trim() !== table.name) {
-                    onEditTable(table.name, newTableName.trim());
+                  // Save table name and/or color if changed
+                  if (newTableName.trim() !== table.name || tableColor !== color) {
+                    onEditTable(table.name, newTableName.trim() || table.name, tableColor);
                   }
                   // Close dialog and reset state
                   setIsEditTableDialogOpen(false);
                   setNewTableName("");
+                  setTableColor("");
                   setEditingFKIndex(null);
                   setFkName("");
                   setFkToTable("");
