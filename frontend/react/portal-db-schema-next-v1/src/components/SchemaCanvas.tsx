@@ -4,6 +4,15 @@ import React, { useRef, useEffect, useState } from "react";
 import { Schema, Table, EntityLayout, Group, serializeSchemaToXML } from "@/lib/schema-parser";
 import { TableNode } from "./TableNode";
 import { RelationshipLines } from "./RelationshipLines";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface SchemaCanvasProps {
   schema: Schema;
@@ -28,6 +37,8 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
   const [mutableSchema, setMutableSchema] = useState<Schema>(schema);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
+  const [newTableName, setNewTableName] = useState("");
 
   const layout = mutableSchema.layouts[layoutIndex];
   // Update mutable schema when prop changes
@@ -543,6 +554,82 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     }
   };
 
+  const handleAddTable = () => {
+    if (!newTableName.trim()) return;
+
+    // Calculate center of viewport
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const viewportCenterX = (canvas.scrollLeft + canvas.clientWidth / 2 - pan.x) / zoom;
+    const viewportCenterY = (canvas.scrollTop + canvas.clientHeight / 2 - pan.y) / zoom;
+
+    const tableName = newTableName.trim();
+
+    // Check if table already exists
+    if (mutableSchema.tables.some(t => t.name === tableName)) {
+      alert('A table with this name already exists!');
+      return;
+    }
+
+    // Create new table
+    const newTable: Table = {
+      name: tableName,
+      columns: [
+        {
+          name: 'id',
+          type: 'INT',
+          mandatory: true,
+        }
+      ],
+      indexes: [
+        {
+          name: `pk_${tableName}`,
+          unique: 'PRIMARY_KEY',
+          columns: ['id'],
+        }
+      ],
+      foreignKeys: [],
+    };
+
+    // Add table to schema
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      newSchema.tables = [...newSchema.tables, newTable];
+
+      // Add to layout
+      const newLayouts = [...newSchema.layouts];
+      const currentLayout = { ...newLayouts[layoutIndex] };
+      const newEntities = [...currentLayout.entities];
+
+      newEntities.push({
+        name: tableName,
+        x: Math.round(viewportCenterX),
+        y: Math.round(viewportCenterY),
+      });
+
+      currentLayout.entities = newEntities;
+      newLayouts[layoutIndex] = currentLayout;
+      newSchema.layouts = newLayouts;
+
+      return newSchema;
+    });
+
+    // Update table positions
+    setTablePositions((prev) => {
+      const newPositions = new Map(prev);
+      newPositions.set(tableName, { x: Math.round(viewportCenterX), y: Math.round(viewportCenterY) });
+      return newPositions;
+    });
+
+    // Set as active table
+    setActiveTable(tableName);
+
+    // Reset and close dialog
+    setNewTableName('');
+    setIsAddTableDialogOpen(false);
+  };
+
   // Pan functionality
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     console.log("canvas click ", activeTable, " ", e.button);
@@ -709,6 +796,12 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
         >
           {isSaving ? 'Saving...' : 'Save Schema'}
         </button>
+        <button
+          onClick={() => setIsAddTableDialogOpen(true)}
+          className="w-full px-2 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded"
+        >
+          + Add Table
+        </button>
         {saveMessage && (
           <div className={`text-xs text-center py-1 rounded ${saveMessage.startsWith('✓') ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
             {saveMessage}
@@ -779,6 +872,52 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
           })}
         </div>
       </div>
-    </div>
+      {/* Add Table Dialog */}
+      <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle>Add New Table</DialogTitle>
+            <DialogDescription>
+              Enter a name for the new table. It will be created with a default ID column.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Table Name</label>
+              <input
+                type="text"
+                value={newTableName}
+                onChange={(e) => setNewTableName(e.target.value)}
+                placeholder="table_name"
+                className="w-full px-3 py-2 border rounded-md text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddTable();
+                }}
+                autoFocus
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <button
+              onClick={() => {
+                setIsAddTableDialogOpen(false);
+                setNewTableName('');
+              }}
+              className="px-4 py-2 text-sm border rounded-md hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAddTable}
+              disabled={!newTableName.trim()}
+              className="px-4 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              Add Table
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>    </div>
   );
 }

@@ -24,7 +24,6 @@
       <column name="request_url" type="VARCHAR" length="2048">
       </column>
       <column name="created_timestamp" type="TIMESTAMP" mandatory="y">
-        <defo>current_timestamp()</defo>
       </column>
       <column name="created_user" type="INT" length="11">
       </column>
@@ -95,18 +94,15 @@
       </column>
       <column name="viewable" type="INT" length="11">
         <comment>viewable in token</comment>
-        <defo>0</defo>
       </column>
       <column name="optional" type="INT" length="11">
         <comment>only optional=Y allowed to configure in user group</comment>
-        <defo>0</defo>
       </column>
       <column name="audit_message_template_id" type="INT" length="11">
         <comment>audit message</comment>
       </column>
       <column name="seq_no" type="INT" length="11">
         <comment>Order sequence</comment>
-        <defo>0</defo>
       </column>
       <column name="rec_status" type="INT" length="11">
         <comment>status of the record
@@ -116,7 +112,6 @@
 3 - Inactive
 4 - Pending Delete
 5 - Delete Rejected</comment>
-        <defo>1</defo>
       </column>
       <column name="maint_table_name" type="VARCHAR" length="100">
         <comment>Detail table name  for maintenance</comment>
@@ -142,12 +137,10 @@
         <comment>Display name</comment>
       </column>
       <column name="created_timestamp" type="TIMESTAMP" mandatory="y">
-        <defo>current_timestamp()</defo>
       </column>
       <column name="created_user" type="INT" length="11">
       </column>
       <column name="active_version" type="INT" length="11">
-        <defo>0</defo>
       </column>
       <column name="session_key" type="VARCHAR" length="64">
         <comment>session key for the current user</comment>
@@ -179,7 +172,6 @@
       <column name="password_hash" type="VARCHAR" length="128">
       </column>
       <column name="created_timestamp" type="DATETIME">
-        <defo>current_timestamp()</defo>
       </column>
       <index name="pk_auth_user_credential" unique="PRIMARY_KEY">
         <column name="id"/>
@@ -201,7 +193,6 @@
         <comment>User status 0 - Active
 1 - Inactive
 2 - Suspended</comment>
-        <defo>0</defo>
       </column>
       <column name="email" type="VARCHAR" length="255">
         <comment>user email</comment>
@@ -211,7 +202,6 @@
       <column name="mobile_no" type="VARCHAR" length="30">
       </column>
       <column name="created_timestamp" type="TIMESTAMP" mandatory="y">
-        <defo>current_timestamp()</defo>
       </column>
       <column name="created_user" type="INT" length="11">
       </column>
@@ -240,19 +230,15 @@
       </column>
       <column name="is_admin" type="INT" length="11" mandatory="y">
         <comment>Indicate admin group, 0-Non-admin, 1-Admin</comment>
-        <defo>0</defo>
       </column>
       <column name="is_maintainable" type="INT" length="11" mandatory="y">
         <comment>Indicate maintainable, 0-Non-maintainable, 1-Maintainable</comment>
-        <defo>1</defo>
       </column>
       <column name="created_timestamp" type="TIMESTAMP" mandatory="y">
-        <defo>current_timestamp()</defo>
       </column>
       <column name="created_user" type="INT" length="11">
       </column>
       <column name="active_version" type="INT" length="11">
-        <defo>0</defo>
       </column>
       <index name="pk_auth_user_group" unique="PRIMARY_KEY">
         <column name="id"/>
@@ -282,7 +268,6 @@
       <column name="reject_reason" type="VARCHAR" length="200">
       </column>
       <column name="created_timestamp" type="TIMESTAMP" mandatory="y">
-        <defo>current_timestamp()</defo>
       </column>
       <column name="created_user" type="INT" length="11">
       </column>
@@ -385,7 +370,6 @@ a - admin</comment>
       <column name="created_user" type="INT" length="11">
       </column>
       <column name="created_timestamp" type="DATETIME" mandatory="y">
-        <defo>current_timestamp()</defo>
       </column>
       <index name="pk_ent_org" unique="PRIMARY_KEY">
         <column name="id"/>
@@ -413,7 +397,6 @@ a - admin</comment>
       <column name="created_user" type="INT" length="11">
       </column>
       <column name="created_timestamp" type="DATETIME" mandatory="y">
-        <defo>current_timestamp()</defo>
       </column>
       <index name="pk_ent_org_detail" unique="PRIMARY_KEY">
         <column name="id"/>
@@ -469,7 +452,6 @@ a - admin</comment>
       </column>
       <column name="created_timestamp" type="DATETIME">
         <comment>date time of the audit</comment>
-        <defo>current_timestamp()</defo>
       </column>
       <index name="pk_sys_approval_audit" unique="PRIMARY_KEY">
         <column name="id"/>
@@ -494,7 +476,6 @@ a - admin</comment>
 100 - checker only
 200 - approval level 1, needs approval all the way up to level 1
 300 - approver level 2, need approval all the way up to level 2</comment>
-        <defo>200</defo>
       </column>
       <column name="ent_org_id" type="INT" length="11">
       </column>
@@ -505,7 +486,6 @@ a - admin</comment>
       <column name="created_user" type="INT" length="11">
       </column>
       <column name="created_timestamp" type="DATETIME">
-        <defo>current_timestamp()</defo>
       </column>
       <column name="modified_user" type="INT" length="11">
       </column>
@@ -561,7 +541,6 @@ a - admin</comment>
         <comment>the user who is requesting this approval</comment>
       </column>
       <column name="maker_timestamp" type="DATETIME">
-        <defo>CURRENT_TIMESTAMP</defo>
       </column>
       <column name="request_status" type="INT" length="11">
         <comment>110 - maker cancel
@@ -572,7 +551,6 @@ a - admin</comment>
 500 - pending approver level 2
 510 - rejected by approver level 2
 600 - approved</comment>
-        <defo>100</defo>
       </column>
       <column name="reference_type" type="INT">
         <comment>100 - sys_param</comment>
@@ -587,7 +565,6 @@ a - admin</comment>
         <comment>1 - active, pending approval
 2 - approved
 3 - cancel / rejected</comment>
-        <defo>1</defo>
       </column>
       <index name="pk_sys_approval_request" unique="PRIMARY_KEY">
         <column name="id"/>
@@ -615,12 +592,10 @@ a - admin</comment>
       <column name="param_type" type="VARCHAR" length="100" mandatory="y">
       </column>
       <column name="created_timestamp" type="TIMESTAMP" mandatory="y">
-        <defo>current_timestamp()</defo>
       </column>
       <column name="created_user" type="INT" length="11">
       </column>
       <column name="active_version" type="INT" length="11">
-        <defo>0</defo>
       </column>
       <index name="pk_sys_param" unique="PRIMARY_KEY">
         <column name="id"/>
@@ -639,7 +614,6 @@ a - admin</comment>
       <column name="remark" type="VARCHAR" length="200">
       </column>
       <column name="created_timestamp" type="TIMESTAMP" mandatory="y">
-        <defo>current_timestamp()</defo>
       </column>
       <column name="created_user" type="INT" length="11">
       </column>
@@ -649,7 +623,6 @@ a - admin</comment>
         <comment>Record
 0 - Active
 1 - Inactive</comment>
-        <defo>0</defo>
       </column>
       <index name="pk_sys_param_detail" unique="PRIMARY_KEY">
         <column name="id"/>
@@ -660,6 +633,23 @@ a - admin</comment>
       <fk name="fk_sys_param_detail_sys_param" to_schema="portal" to_table="sys_param" options="ON DELETE NO ACTION ON UPDATE NO ACTION">
         <fk_column name="param_id" pk="id"/>
       </fk>
+    </table>
+    <table name="my_little_pony" row_count="0">
+      <column name="id" type="INT" mandatory="y">
+      </column>
+      <index name="pk_my_little_pony" unique="PRIMARY_KEY">
+        <column name="id"/>
+      </index>
+      <fk name="fk_my_little_pony_pk" to_schema="portal" to_table="my_little_pony2">
+        <fk_column name="id" pk="id"/>
+      </fk>
+    </table>
+    <table name="my_little_pony2" row_count="0">
+      <column name="id" type="INT" mandatory="y">
+      </column>
+      <index name="pk_my_little_pony2" unique="PRIMARY_KEY">
+        <column name="id"/>
+      </index>
     </table>
   </schema>
   <layout name="Main Layout" id="Layout-171b" show_relation="columns">
@@ -673,7 +663,7 @@ a - admin</comment>
     <entity schema="portal" name="auth_user_group_member" color="C7F4BE" x="289" y="187"/>
     <entity schema="portal" name="auth_user_group_resource" color="C7F4BE" x="527" y="459"/>
     <entity schema="portal" name="ent_org" color="F4DDBE" x="1479" y="102"/>
-    <entity schema="portal" name="ent_org_detail" color="F4DDBE" x="1462" y="340"/>
+    <entity schema="portal" name="ent_org_detail" color="F4DDBE" x="1706" y="423"/>
     <entity schema="portal" name="menu_component_resource_mapping" color="C7F4BE" x="799" y="85"/>
     <entity schema="portal" name="sys_approval_audit" color="D1BEF4" x="2193" y="357"/>
     <entity schema="portal" name="sys_approval_level" color="D1BEF4" x="2176" y="595"/>
@@ -681,6 +671,8 @@ a - admin</comment>
     <entity schema="portal" name="sys_approval_request" color="D1BEF4" x="1955" y="85"/>
     <entity schema="portal" name="sys_param" color="D1BEF4" x="2414" y="357"/>
     <entity schema="portal" name="sys_param_detail" color="D1BEF4" x="2669" y="357"/>
+    <entity schema="" name="my_little_pony" color="F3E5F5" x="1099" y="960"/>
+    <entity schema="" name="my_little_pony2" color="FFFFFF" x="1486" y="797"/>
     <group name="sys_approval_request" color="F0ECF7">
       <entity name="sys_approval_matrix"/>
       <entity name="sys_param"/>
