@@ -817,6 +817,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
         className="relative w-full h-full overflow-auto"
         onMouseDown={handleCanvasMouseDown}
         onWheel={handleWheel}
+        onContextMenu={(e) => e.preventDefault()}
         style={{
           cursor: isPanning ? "grabbing" : "grab",
         }}
