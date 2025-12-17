@@ -428,6 +428,87 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     });
   };
 
+  const handleAddForeignKey = (
+    tableName: string,
+    fkName: string,
+    toTable: string,
+    columns: Array<{name: string, pk: string}>
+  ) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const newForeignKeys = [...newTable.foreignKeys];
+      
+      newForeignKeys.push({
+        name: fkName,
+        toSchema: newSchema.schemaName,
+        toTable,
+        columns,
+      });
+      
+      newTable.foreignKeys = newForeignKeys;
+      newSchema.tables = [...newSchema.tables];
+      newSchema.tables[tableIndex] = newTable;
+      
+      return newSchema;
+    });
+  };
+
+  const handleEditForeignKey = (
+    tableName: string,
+    fkIndex: number,
+    fkName: string,
+    toTable: string,
+    columns: Array<{name: string, pk: string}>
+  ) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const newForeignKeys = [...newTable.foreignKeys];
+      
+      if (fkIndex >= 0 && fkIndex < newForeignKeys.length) {
+        newForeignKeys[fkIndex] = {
+          name: fkName,
+          toSchema: newSchema.schemaName,
+          toTable,
+          columns,
+        };
+        
+        newTable.foreignKeys = newForeignKeys;
+        newSchema.tables = [...newSchema.tables];
+        newSchema.tables[tableIndex] = newTable;
+      }
+      
+      return newSchema;
+    });
+  };
+
+  const handleRemoveForeignKey = (tableName: string, fkIndex: number) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const newForeignKeys = [...newTable.foreignKeys];
+      
+      if (fkIndex >= 0 && fkIndex < newForeignKeys.length) {
+        newForeignKeys.splice(fkIndex, 1);
+        newTable.foreignKeys = newForeignKeys;
+        newSchema.tables = [...newSchema.tables];
+        newSchema.tables[tableIndex] = newTable;
+      }
+      
+      return newSchema;
+    });
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setSaveMessage(null);
@@ -689,6 +770,10 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                 onEditColumn={handleEditColumn}
                 onDeleteTable={handleDeleteTable}
                 onEditTable={handleEditTable}
+                onAddForeignKey={handleAddForeignKey}
+                onEditForeignKey={handleEditForeignKey}
+                onRemoveForeignKey={handleRemoveForeignKey}
+                allTables={mutableSchema.tables}
               />
             );
           })}

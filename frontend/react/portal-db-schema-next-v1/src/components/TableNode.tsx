@@ -30,6 +30,10 @@ interface TableNodeProps {
   onEditColumn: (tableName: string, columnIndex: number, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string, comment?: string) => void;
   onDeleteTable: (tableName: string) => void;
   onEditTable: (oldTableName: string, newTableName: string) => void;
+  onAddForeignKey: (tableName: string, fkName: string, toTable: string, columns: Array<{name: string, pk: string}>) => void;
+  onEditForeignKey: (tableName: string, fkIndex: number, fkName: string, toTable: string, columns: Array<{name: string, pk: string}>) => void;
+  onRemoveForeignKey: (tableName: string, fkIndex: number) => void;
+  allTables: Table[];
 }
 
 export function TableNode({
@@ -50,6 +54,10 @@ export function TableNode({
   onEditColumn,
   onDeleteTable,
   onEditTable,
+  onAddForeignKey,
+  onEditForeignKey,
+  onRemoveForeignKey,
+  allTables,
 }: TableNodeProps) {
   const [isDragging, setIsDragging] = React.useState(false);
   const [position, setPosition] = React.useState({ x, y });
@@ -69,6 +77,10 @@ export function TableNode({
   const [deleteConfirmationName, setDeleteConfirmationName] = React.useState("");
   const [isEditTableDialogOpen, setIsEditTableDialogOpen] = React.useState(false);
   const [newTableName, setNewTableName] = React.useState("");
+  const [editingFKIndex, setEditingFKIndex] = React.useState<number | null>(null);
+  const [fkName, setFkName] = React.useState("");
+  const [fkToTable, setFkToTable] = React.useState("");
+  const [fkColumnMappings, setFkColumnMappings] = React.useState<Array<{name: string, pk: string}>>([{name: "", pk: ""}]);
 
   useEffect(() => {
     setPosition({ x, y });
@@ -204,7 +216,66 @@ export function TableNode({
 
   const handleOpenEditTableDialog = () => {
     setNewTableName(table.name);
+    // Reset foreign key editing state
+    setEditingFKIndex(null);
+    setFkName("");
+    setFkToTable("");
+    setFkColumnMappings([{name: "", pk: ""}]);
     setIsEditTableDialogOpen(true);
+  };
+
+  const handleOpenFKDialog = (fkIndex?: number) => {
+    if (fkIndex !== undefined && fkIndex !== null) {
+      // Edit existing FK
+      const fk = table.foreignKeys[fkIndex];
+      setEditingFKIndex(fkIndex);
+      setFkName(fk.name);
+      setFkToTable(fk.toTable);
+      setFkColumnMappings(fk.columns.length > 0 ? [...fk.columns] : [{name: "", pk: ""}]);
+    } else {
+      // Add new FK
+      setEditingFKIndex(null);
+      setFkName(`fk_${table.name}_`);
+      setFkToTable("");
+      setFkColumnMappings([{name: "", pk: ""}]);
+    }
+  };
+
+  const handleSubmitFK = () => {
+    if (!fkName.trim() || !fkToTable || fkColumnMappings.some(col => !col.name || !col.pk)) {
+      return; // Validation failed
+    }
+
+    const validColumns = fkColumnMappings.filter(col => col.name && col.pk);
+    
+    if (editingFKIndex !== null) {
+      onEditForeignKey(table.name, editingFKIndex, fkName.trim(), fkToTable, validColumns);
+    } else {
+      onAddForeignKey(table.name, fkName.trim(), fkToTable, validColumns);
+    }
+
+    // Reset form
+    setEditingFKIndex(null);
+    setFkName("");
+    setFkToTable("");
+    setFkColumnMappings([{name: "", pk: ""}]);
+  };
+
+  const addFKColumn = () => {
+    setFkColumnMappings([...fkColumnMappings, {name: "", pk: ""}]);
+  };
+
+  const removeFKColumn = (index: number) => {
+    if (fkColumnMappings.length > 1) {
+      const newColumns = fkColumnMappings.filter((_, i) => i !== index);
+      setFkColumnMappings(newColumns);
+    }
+  };
+
+  const updateFKColumn = (index: number, field: 'name' | 'pk', value: string) => {
+    const newColumns = [...fkColumnMappings];
+    newColumns[index] = { ...newColumns[index], [field]: value };
+    setFkColumnMappings(newColumns);
   };
 
   const handleEditTable = () => {
@@ -512,24 +583,25 @@ export function TableNode({
 
         {/* Edit Table Dialog */}
         <Dialog open={isEditTableDialogOpen} onOpenChange={setIsEditTableDialogOpen}>
-          <DialogContent onClick={(e) => e.stopPropagation()}>
+          <DialogContent onClick={(e) => e.stopPropagation()} className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Table: {table.name}</DialogTitle>
               <DialogDescription>
-                Change the name of this table.
+                Change the table name and manage foreign key constraints.
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4 py-4">
+            <div className="space-y-6 py-4">
+              {/* Table Name Section */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  New Table Name
+                  Table Name
                 </label>
                 <input
                   type="text"
                   value={newTableName}
                   onChange={(e) => setNewTableName(e.target.value)}
-                  placeholder="Enter new table name"
+                  placeholder="Enter table name"
                   className="w-full px-3 py-2 border rounded-md text-sm"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && newTableName.trim()) {
@@ -538,6 +610,159 @@ export function TableNode({
                   }}
                 />
               </div>
+
+              {/* Foreign Keys Section */}
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">
+                    Foreign Key Constraints
+                  </label>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenFKDialog();
+                    }}
+                    className="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded"
+                  >
+                    + Add Foreign Key
+                  </button>
+                </div>
+
+                {table.foreignKeys.length === 0 ? (
+                  <p className="text-xs text-gray-500 italic">No foreign keys defined</p>
+                ) : (
+                  <div className="space-y-2">
+                    {table.foreignKeys.map((fk, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                        <div className="flex-1">
+                          <div className="text-xs font-semibold">{fk.name}</div>
+                          <div className="text-xs text-gray-600">
+                            {fk.columns.map(col => col.name).join(", ")} → {fk.toTable}.{fk.columns.map(col => col.pk).join(", ")}
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenFKDialog(index);
+                            }}
+                            className="px-2 py-1 text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded"
+                          >
+                            ✎ Edit
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRemoveForeignKey(table.name, index);
+                            }}
+                            className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded"
+                          >
+                            ✕ Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Foreign Key Edit Form - shown when editing/adding */}
+                {(editingFKIndex !== null || fkName !== "") && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-md space-y-3">
+                    <div className="text-sm font-medium text-blue-900">
+                      {editingFKIndex !== null ? "Edit" : "Add"} Foreign Key
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Constraint Name</label>
+                      <input
+                        type="text"
+                        value={fkName}
+                        onChange={(e) => setFkName(e.target.value)}
+                        placeholder="fk_table_name"
+                        className="w-full px-2 py-1 border rounded text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">References Table</label>
+                      <select
+                        value={fkToTable}
+                        onChange={(e) => setFkToTable(e.target.value)}
+                        className="w-full px-2 py-1 border rounded text-xs"
+                      >
+                        <option value="">Select table...</option>
+                        {allTables.filter(t => t.name !== table.name).map(t => (
+                          <option key={t.name} value={t.name}>{t.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Column Mappings</label>
+                      {fkColumnMappings.map((col, idx) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                          <select
+                            value={col.name}
+                            onChange={(e) => updateFKColumn(idx, 'name', e.target.value)}
+                            className="flex-1 px-2 py-1 border rounded text-xs"
+                          >
+                            <option value="">Select column...</option>
+                            {table.columns.map(c => (
+                              <option key={c.name} value={c.name}>{c.name}</option>
+                            ))}
+                          </select>
+                          <span className="text-xs">→</span>
+                          <select
+                            value={col.pk}
+                            onChange={(e) => updateFKColumn(idx, 'pk', e.target.value)}
+                            className="flex-1 px-2 py-1 border rounded text-xs"
+                            disabled={!fkToTable}
+                          >
+                            <option value="">Select column...</option>
+                            {fkToTable && allTables.find(t => t.name === fkToTable)?.columns.map(c => (
+                              <option key={c.name} value={c.name}>{c.name}</option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => removeFKColumn(idx)}
+                            disabled={fkColumnMappings.length === 1}
+                            className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded disabled:opacity-50"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={addFKColumn}
+                        className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
+                      >
+                        + Add Column Mapping
+                      </button>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        onClick={() => {
+                          setEditingFKIndex(null);
+                          setFkName("");
+                          setFkToTable("");
+                          setFkColumnMappings([{name: "", pk: ""}]);
+                        }}
+                        className="px-3 py-1 text-xs border rounded hover:bg-gray-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitFK}
+                        disabled={!fkName.trim() || !fkToTable || fkColumnMappings.some(col => !col.name || !col.pk)}
+                        className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400"
+                      >
+                        {editingFKIndex !== null ? "Update" : "Add"} FK
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             
             <DialogFooter>
@@ -545,17 +770,21 @@ export function TableNode({
                 onClick={() => {
                   setIsEditTableDialogOpen(false);
                   setNewTableName("");
+                  setEditingFKIndex(null);
+                  setFkName("");
+                  setFkToTable("");
+                  setFkColumnMappings([{name: "", pk: ""}]);
                 }}
                 className="px-4 py-2 text-sm border rounded-md hover:bg-gray-100"
               >
-                Cancel
+                Close
               </button>
               <button
                 onClick={handleEditTable}
                 disabled={!newTableName.trim() || newTableName.trim() === table.name}
                 className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                Save Changes
+                Save Table Name
               </button>
             </DialogFooter>
           </DialogContent>
