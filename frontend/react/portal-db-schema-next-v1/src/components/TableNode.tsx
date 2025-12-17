@@ -30,7 +30,7 @@ interface TableNodeProps {
   onAddColumn: (tableName: string, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string, comment?: string) => void;
   onEditColumn: (tableName: string, columnIndex: number, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string, comment?: string) => void;
   onDeleteTable: (tableName: string) => void;
-  onEditTable: (oldTableName: string, newTableName: string, color?: string) => void;
+  onEditTable: (oldTableName: string, newTableName: string, color?: string, comment?: string) => void;
   onAddForeignKey: (tableName: string, fkName: string, toTable: string, columns: Array<{name: string, pk: string}>) => void;
   onEditForeignKey: (tableName: string, fkIndex: number, fkName: string, toTable: string, columns: Array<{name: string, pk: string}>) => void;
   onRemoveForeignKey: (tableName: string, fkIndex: number) => void;
@@ -86,6 +86,7 @@ export function TableNode({
   const [isEditTableDialogOpen, setIsEditTableDialogOpen] = React.useState(false);
   const [newTableName, setNewTableName] = React.useState("");
   const [tableColor, setTableColor] = React.useState("");
+  const [tableComment, setTableComment] = React.useState("");
   const [editingFKIndex, setEditingFKIndex] = React.useState<number | null>(null);
   const [fkName, setFkName] = React.useState("");
   const [fkToTable, setFkToTable] = React.useState("");
@@ -234,6 +235,7 @@ export function TableNode({
   const handleOpenEditTableDialog = () => {
     setNewTableName(table.name);
     setTableColor(color);
+    setTableComment(table.comment || "");
     // Reset foreign key editing state
     setEditingFKIndex(null);
     setFkName("");
@@ -345,21 +347,24 @@ export function TableNode({
   };
 
   const handleEditTable = () => {
-    if (newTableName.trim() && newTableName.trim() !== table.name) {
-      onEditTable(table.name, newTableName.trim(), tableColor);
-      setIsEditTableDialogOpen(false);
-      setNewTableName("");
-      setTableColor("");
-    } else if (tableColor !== color) {
-      // Only color changed
-      onEditTable(table.name, table.name, tableColor);
-      setIsEditTableDialogOpen(false);
-      setTableColor("");
-    } else {
-      setIsEditTableDialogOpen(false);
-      setNewTableName("");
-      setTableColor("");
+    const hasChanges = 
+      (newTableName.trim() && newTableName.trim() !== table.name) ||
+      tableColor !== color ||
+      tableComment !== (table.comment || "");
+    
+    if (hasChanges) {
+      onEditTable(
+        table.name, 
+        newTableName.trim() || table.name, 
+        tableColor, 
+        tableComment
+      );
     }
+    
+    setIsEditTableDialogOpen(false);
+    setNewTableName("");
+    setTableColor("");
+    setTableComment("");
   };
 
   // Get primary key columns
@@ -423,9 +428,18 @@ export function TableNode({
             filter: 'brightness(0.85)'
           }}
           onMouseDown={handleMouseDown}
+          title={table.comment || undefined}
         >
-          {table.name}{relationshipLabel ? ` ${relationshipLabel}` : ""}
-          {isSelected && <span className="ml-2 text-xs">(selected)</span>}
+          <div className="flex items-center gap-1">
+            <span>{table.name}{relationshipLabel ? ` ${relationshipLabel}` : ""}</span>
+            {table.comment && <span className="text-xs opacity-70" title={table.comment}>💬</span>}
+            {isSelected && <span className="ml-2 text-xs">(selected)</span>}
+          </div>
+          {table.comment && (
+            <div className="text-xs font-normal opacity-80 mt-1 line-clamp-2">
+              {table.comment}
+            </div>
+          )}
         </div>
 
         {/* Add Column and Delete Table buttons - only show when selected */}
@@ -750,6 +764,21 @@ export function TableNode({
                 <p className="text-xs text-gray-500">Enter hex color code without #</p>
               </div>
 
+              {/* Table Comment Section */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Table Comment
+                </label>
+                <textarea
+                  value={tableComment}
+                  onChange={(e) => setTableComment(e.target.value)}
+                  placeholder="Enter table description or comment"
+                  className="w-full px-3 py-2 border rounded-md text-sm min-h-[80px]"
+                  rows={3}
+                />
+                <p className="text-xs text-gray-500">Optional description for the table</p>
+              </div>
+
               {/* Foreign Keys Section */}
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex items-center justify-between">
@@ -1058,14 +1087,15 @@ export function TableNode({
             <DialogFooter>
               <button
                 onClick={() => {
-                  // Save table name and/or color if changed
-                  if (newTableName.trim() !== table.name || tableColor !== color) {
-                    onEditTable(table.name, newTableName.trim() || table.name, tableColor);
+                  // Save table name, color, or comment if changed
+                  if (newTableName.trim() !== table.name || tableColor !== color || tableComment !== (table.comment || "")) {
+                    onEditTable(table.name, newTableName.trim() || table.name, tableColor, tableComment);
                   }
                   // Close dialog and reset state
                   setIsEditTableDialogOpen(false);
                   setNewTableName("");
                   setTableColor("");
+                  setTableComment("");
                   setEditingFKIndex(null);
                   setFkName("");
                   setFkToTable("");

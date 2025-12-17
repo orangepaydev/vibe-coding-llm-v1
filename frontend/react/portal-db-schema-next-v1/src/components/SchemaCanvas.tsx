@@ -391,16 +391,17 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     }
   };
 
-  const handleEditTable = (oldTableName: string, newTableName: string, color?: string) => {
+  const handleEditTable = (oldTableName: string, newTableName: string, color?: string, comment?: string) => {
     setMutableSchema((prevSchema) => {
       const newSchema = { ...prevSchema };
       
-      // Update the table name
+      // Update the table name and comment
       const tableIndex = newSchema.tables.findIndex((t) => t.name === oldTableName);
       if (tableIndex !== -1) {
         newSchema.tables[tableIndex] = {
           ...newSchema.tables[tableIndex],
           name: newTableName,
+          comment: comment !== undefined ? comment : newSchema.tables[tableIndex].comment,
         };
       }
       
