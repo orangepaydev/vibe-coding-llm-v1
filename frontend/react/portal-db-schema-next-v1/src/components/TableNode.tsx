@@ -157,7 +157,11 @@ export function TableNode({
     setNewColumnType(column.type);
     setNewColumnLength(column.length || "");
     setIsPrimaryKey(pkColumns.has(column.name));
-    setIsUnique(false); // TODO: Extract from unique indexes
+    // Check if column has a unique index
+    const hasUniqueIndex = table.indexes.some(
+      (idx) => idx.unique === "UNIQUE" && idx.columns.length === 1 && idx.columns[0] === column.name
+    );
+    setIsUnique(hasUniqueIndex);
     setIsNotNull(column.mandatory || false);
     setDefaultValue(column.defaultValue || "");
     setComment(column.comment || "");
