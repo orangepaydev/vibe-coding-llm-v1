@@ -349,7 +349,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
       // Remove foreign keys that reference this table
       newSchema.tables = newSchema.tables.map((table) => ({
         ...table,
-        foreignKeys: table.foreignKeys.filter((fk) => fk.referencedTable !== tableName),
+        foreignKeys: table.foreignKeys.filter((fk) => fk.toTable !== tableName),
       }));
       
       // Remove from layouts
@@ -369,6 +369,63 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     if (activeTable === tableName) {
       setActiveTable(null);
     }
+  };
+
+  const handleEditTable = (oldTableName: string, newTableName: string) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      
+      // Update the table name
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === oldTableName);
+      if (tableIndex !== -1) {
+        newSchema.tables[tableIndex] = {
+          ...newSchema.tables[tableIndex],
+          name: newTableName,
+        };
+      }
+      
+      // Update foreign keys that reference this table
+      newSchema.tables = newSchema.tables.map((table) => ({
+        ...table,
+        foreignKeys: table.foreignKeys.map((fk) => 
+          fk.toTable === oldTableName 
+            ? { ...fk, toTable: newTableName }
+            : fk
+        ),
+      }));
+      
+      // Update in layouts
+      newSchema.layouts = newSchema.layouts.map((layout) => ({
+        ...layout,
+        entities: layout.entities.map((e) => 
+          e.name === oldTableName 
+            ? { ...e, name: newTableName }
+            : e
+        ),
+        groups: layout.groups.map((group) => ({
+          ...group,
+          entities: group.entities.map((e) => e === oldTableName ? newTableName : e),
+        })),
+      }));
+      
+      return newSchema;
+    });
+    
+    // Update active table if it was renamed
+    if (activeTable === oldTableName) {
+      setActiveTable(newTableName);
+    }
+    
+    // Update table positions map
+    setTablePositions((prev) => {
+      const newPositions = new Map(prev);
+      const position = newPositions.get(oldTableName);
+      if (position) {
+        newPositions.delete(oldTableName);
+        newPositions.set(newTableName, position);
+      }
+      return newPositions;
+    });
   };
 
   const handleSave = async () => {
@@ -631,6 +688,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                 onAddColumn={handleAddColumn}
                 onEditColumn={handleEditColumn}
                 onDeleteTable={handleDeleteTable}
+                onEditTable={handleEditTable}
               />
             );
           })}

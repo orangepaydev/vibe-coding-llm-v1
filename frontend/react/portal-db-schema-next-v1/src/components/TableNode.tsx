@@ -29,6 +29,7 @@ interface TableNodeProps {
   onAddColumn: (tableName: string, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string, comment?: string) => void;
   onEditColumn: (tableName: string, columnIndex: number, name: string, type: string, length?: string, isPrimary?: boolean, isUnique?: boolean, isNotNull?: boolean, defaultValue?: string, comment?: string) => void;
   onDeleteTable: (tableName: string) => void;
+  onEditTable: (oldTableName: string, newTableName: string) => void;
 }
 
 export function TableNode({
@@ -48,6 +49,7 @@ export function TableNode({
   onAddColumn,
   onEditColumn,
   onDeleteTable,
+  onEditTable,
 }: TableNodeProps) {
   const [isDragging, setIsDragging] = React.useState(false);
   const [position, setPosition] = React.useState({ x, y });
@@ -65,6 +67,8 @@ export function TableNode({
   const [comment, setComment] = React.useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [deleteConfirmationName, setDeleteConfirmationName] = React.useState("");
+  const [isEditTableDialogOpen, setIsEditTableDialogOpen] = React.useState(false);
+  const [newTableName, setNewTableName] = React.useState("");
 
   useEffect(() => {
     setPosition({ x, y });
@@ -198,6 +202,19 @@ export function TableNode({
     }
   };
 
+  const handleOpenEditTableDialog = () => {
+    setNewTableName(table.name);
+    setIsEditTableDialogOpen(true);
+  };
+
+  const handleEditTable = () => {
+    if (newTableName.trim() && newTableName.trim() !== table.name) {
+      onEditTable(table.name, newTableName.trim());
+      setIsEditTableDialogOpen(false);
+      setNewTableName("");
+    }
+  };
+
   // Get primary key columns
   const pkIndex = table.indexes.find((idx) => idx.unique === "PRIMARY_KEY");
   const pkColumns = new Set(pkIndex?.columns || []);
@@ -267,6 +284,15 @@ export function TableNode({
               className="flex-1 px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded font-semibold"
             >
               🗑️ Del Table
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenEditTableDialog();
+              }}
+              className="flex-1 px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded"
+            >
+              ✎ Edit Table
             </button>
           </div>
         )}
@@ -479,6 +505,57 @@ export function TableNode({
                 className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {editingColumnIndex !== null ? "Save Changes" : "Add Column"}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Table Dialog */}
+        <Dialog open={isEditTableDialogOpen} onOpenChange={setIsEditTableDialogOpen}>
+          <DialogContent onClick={(e) => e.stopPropagation()}>
+            <DialogHeader>
+              <DialogTitle>Edit Table: {table.name}</DialogTitle>
+              <DialogDescription>
+                Change the name of this table.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  New Table Name
+                </label>
+                <input
+                  type="text"
+                  value={newTableName}
+                  onChange={(e) => setNewTableName(e.target.value)}
+                  placeholder="Enter new table name"
+                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newTableName.trim()) {
+                      handleEditTable();
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <button
+                onClick={() => {
+                  setIsEditTableDialogOpen(false);
+                  setNewTableName("");
+                }}
+                className="px-4 py-2 text-sm border rounded-md hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditTable}
+                disabled={!newTableName.trim() || newTableName.trim() === table.name}
+                className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Save Changes
               </button>
             </DialogFooter>
           </DialogContent>
