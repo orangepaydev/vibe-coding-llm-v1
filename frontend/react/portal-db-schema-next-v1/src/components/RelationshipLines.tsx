@@ -39,18 +39,11 @@ export function RelationshipLines({ tables, tablePositions }: RelationshipLinesP
 
     const tableHeight = getTableHeight(table);
     
-    // Use the center-right for source tables and center-left for target tables
-    if (isSource) {
-      return {
-        x: position.x + TABLE_WIDTH,
-        y: position.y + tableHeight / 2,
-      };
-    } else {
-      return {
-        x: position.x,
-        y: position.y + tableHeight / 2,
-      };
-    }
+    // Use the horizontal center for both source and target tables
+    return {
+      x: position.x + TABLE_WIDTH / 2,
+      y: position.y + tableHeight / 2,
+    };
   };
 
   // Create elbow connector path (right-angle connector)
