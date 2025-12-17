@@ -632,19 +632,17 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
 
   // Pan functionality
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    console.log("canvas click ", activeTable, " ", e.button);
-    console.log("target  ", e.target);
-    console.log("current target ", e.currentTarget);
-
-    if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
-      // Middle mouse button or Ctrl + left click
+    if (e.button === 2 || (e.button === 0 && e.ctrlKey)) {
+      // Right mouse button or Ctrl + left click
       setIsPanning(true);
       setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
       e.preventDefault();
     } else if (e.button === 0 && e.target === e.currentTarget) {
-      console.log("not a table")
       // Left click on canvas background (not on a table)
       setActiveTable(null);
+      // Start panning when clicking on empty canvas area
+      setIsPanning(true);
+      setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     }
   };
 
@@ -809,7 +807,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
         )}
         <div className="text-xs text-gray-400 mt-2 pt-2 border-t">
           Ctrl+Scroll: Zoom<br/>
-          Ctrl+Drag: Pan
+          Right-Click+Drag: Pan
         </div>
       </div>
 
@@ -820,7 +818,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
         onMouseDown={handleCanvasMouseDown}
         onWheel={handleWheel}
         style={{
-          cursor: isPanning ? "grabbing" : "default",
+          cursor: isPanning ? "grabbing" : "grab",
         }}
       >
         <div
