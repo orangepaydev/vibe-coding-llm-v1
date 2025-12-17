@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { DDLGeneratorFactory, DatabaseType } from "@/lib/ddl-generator";
 
 interface SchemaCanvasProps {
   schema: Schema;
@@ -39,6 +40,10 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
   const [newTableName, setNewTableName] = useState("");
+  const [isGenerateSchemaDialogOpen, setIsGenerateSchemaDialogOpen] = useState(false);
+  const [selectedDatabase, setSelectedDatabase] = useState<DatabaseType | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateMessage, setGenerateMessage] = useState<string | null>(null);
 
   const layout = mutableSchema.layouts[layoutIndex];
   // Update mutable schema when prop changes
@@ -558,6 +563,52 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     }
   };
 
+  const handleGenerateSchema = async () => {
+    if (!selectedDatabase) return;
+
+    setIsGenerating(true);
+    setGenerateMessage(null);
+
+    try {
+      // Generate DDL using the appropriate generator
+      const ddl = DDLGeneratorFactory.generateDDL(mutableSchema, selectedDatabase);
+
+      // Extract filename without extension
+      const filenameWithoutExt = filename.replace(/\.dbs$/, '');
+      const sqlFilename = `${filenameWithoutExt}-${selectedDatabase}.sql`;
+
+      // Save the generated SQL file
+      const response = await fetch('/api/save-sql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: sqlFilename,
+          content: ddl,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setGenerateMessage(`✓ Generated ${sqlFilename} successfully`);
+        setTimeout(() => {
+          setGenerateMessage(null);
+          setIsGenerateSchemaDialogOpen(false);
+          setSelectedDatabase(null);
+        }, 2000);
+      } else {
+        setGenerateMessage(`✗ Error: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Generate error:', error);
+      setGenerateMessage('✗ Failed to generate schema');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handleAddTable = () => {
     if (!newTableName.trim()) return;
 
@@ -579,6 +630,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     // Create new table
     const newTable: Table = {
       name: tableName,
+      schema: mutableSchema.schemaName,
       columns: [
         {
           name: 'id',
@@ -608,6 +660,8 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
 
       newEntities.push({
         name: tableName,
+        schema: mutableSchema.schemaName,
+        color: 'FFFFFF',
         x: Math.round(viewportCenterX),
         y: Math.round(viewportCenterY),
       });
@@ -804,6 +858,12 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
         >
           + Add Table
         </button>
+        <button
+          onClick={() => setIsGenerateSchemaDialogOpen(true)}
+          className="w-full px-2 py-1 text-xs bg-purple-500 hover:bg-purple-600 text-white rounded"
+        >
+          Generate Schema
+        </button>
         {saveMessage && (
           <div className={`text-xs text-center py-1 rounded ${saveMessage.startsWith('✓') ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'}`}>
             {saveMessage}
@@ -944,6 +1004,76 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
             </button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>    </div>
+      </Dialog>
+      
+      {/* Generate Schema Dialog */}
+      <Dialog open={isGenerateSchemaDialogOpen} onOpenChange={setIsGenerateSchemaDialogOpen}>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle>Generate Database Schema</DialogTitle>
+            <DialogDescription>
+              Select a database type to generate DDL script for your schema. The SQL file will be saved in the schema folder.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Database Type</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  DatabaseType.POSTGRESQL,
+                  DatabaseType.MYSQL,
+                  DatabaseType.MARIADB,
+                  DatabaseType.ORACLE,
+                ].map((dbType) => (
+                  <button
+                    key={dbType}
+                    onClick={() => setSelectedDatabase(dbType)}
+                    className={`px-4 py-3 border rounded-md text-sm font-medium transition-colors ${
+                      selectedDatabase === dbType
+                        ? 'bg-purple-500 text-white border-purple-500'
+                        : 'bg-white hover:bg-gray-50 border-gray-300'
+                    }`}
+                  >
+                    {dbType}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {generateMessage && (
+              <div className={`text-xs text-center py-2 rounded ${
+                generateMessage.startsWith('✓') 
+                  ? 'text-green-600 bg-green-50' 
+                  : 'text-red-600 bg-red-50'
+              }`}>
+                {generateMessage}
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <button
+              onClick={() => {
+                setIsGenerateSchemaDialogOpen(false);
+                setSelectedDatabase(null);
+                setGenerateMessage(null);
+              }}
+              className="px-4 py-2 text-sm border rounded-md hover:bg-gray-100"
+              disabled={isGenerating}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleGenerateSchema}
+              disabled={!selectedDatabase || isGenerating}
+              className="px-4 py-2 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {isGenerating ? 'Generating...' : 'Generate DDL'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
