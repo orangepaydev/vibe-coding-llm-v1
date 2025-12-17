@@ -17,6 +17,8 @@ export default function Home() {
   const [schemaFiles, setSchemaFiles] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isNewSchemaOpen, setIsNewSchemaOpen] = useState(false);
+  const [newSchemaName, setNewSchemaName] = useState('');
 
   useEffect(() => {
     // Fetch schema files from the schema folder
@@ -73,6 +75,62 @@ export default function Home() {
         console.error('Error uploading file:', error);
         alert('Failed to upload file');
       }
+    }
+  };
+
+  const handleCreateNewSchema = async () => {
+    if (!newSchemaName.trim()) {
+      alert('Please enter a schema name');
+      return;
+    }
+
+    // Ensure filename ends with .dbs
+    const filename = newSchemaName.trim().endsWith('.dbs') 
+      ? newSchemaName.trim() 
+      : `${newSchemaName.trim()}.dbs`;
+
+    try {
+      // Check if file already exists
+      const filesResponse = await fetch('/api/schema-files');
+      if (filesResponse.ok) {
+        const existingFiles = await filesResponse.json();
+        if (existingFiles.includes(filename)) {
+          alert(`A schema file named "${filename}" already exists. Please choose a different name.`);
+          return;
+        }
+      }
+
+      // Create minimal empty schema
+      const emptySchemaXML = `<?xml version="1.0" encoding="utf-8" ?>
+<project name="${newSchemaName.trim().replace('.dbs', '')}" database="Generic">
+  <schema name="public">
+  </schema>
+  <layout name="Default" id="Layout-1" show_relation="always">
+  </layout>
+</project>`;
+
+      // Save the new schema file
+      const response = await fetch('/api/save-schema', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename,
+          content: emptySchemaXML,
+        }),
+      });
+
+      if (response.ok) {
+        // Navigate to the db-edit page with the new schema
+        router.push(`/db-edit?file=${encodeURIComponent(filename)}`);
+      } else {
+        const error = await response.json();
+        alert(`Failed to create schema: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error creating schema:', error);
+      alert('Failed to create schema');
     }
   };
 
@@ -156,12 +214,63 @@ export default function Home() {
                 </div>
               </DialogContent>
             </Dialog>
-            <Button
-              variant="outline"
-              className="cursor-pointer border-green-500 text-green-600 hover:bg-green-50"
-            >
-              New Schema
-            </Button>
+            <Dialog open={isNewSchemaOpen} onOpenChange={setIsNewSchemaOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="cursor-pointer border-green-500 text-green-600 hover:bg-green-50"
+                >
+                  New Schema
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Create New Schema</DialogTitle>
+                  <DialogDescription>
+                    Enter a name for your new schema file. It will be created in the schema folder.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Schema Name
+                    </label>
+                    <input
+                      type="text"
+                      value={newSchemaName}
+                      onChange={(e) => setNewSchemaName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleCreateNewSchema();
+                      }}
+                      placeholder="my-schema.dbs"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                      autoFocus
+                    />
+                    <p className="text-xs text-gray-500">
+                      The .dbs extension will be added automatically if not provided.
+                    </p>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsNewSchemaOpen(false);
+                        setNewSchemaName('');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleCreateNewSchema}
+                      disabled={!newSchemaName.trim()}
+                      className="bg-green-500 hover:bg-green-600"
+                    >
+                      Create Schema
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>

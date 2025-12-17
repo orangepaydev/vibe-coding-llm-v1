@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="sample-2" database="Generic">
+  <schema name="public">
+  </schema>
+  <layout name="Default" id="Layout-1" show_relation="always">
+  </layout>
+</project>

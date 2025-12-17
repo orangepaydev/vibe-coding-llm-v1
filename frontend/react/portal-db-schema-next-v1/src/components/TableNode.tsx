@@ -670,7 +670,7 @@ export function TableNode({
                 <div className="space-y-1">
                   <p className="text-xs text-gray-500">Preset colors:</p>
                   <div className="grid grid-cols-12 gap-1">
-                    {['E3F2FD', 'F3E5F5', 'FCE4EC', 'FFF3E0', 'E8F5E9', 'FFF9C4', 'FFE0B2', 'FFCCBC', 'D7CCC8', 'CFD8DC', 'F5F5F5', 'EEEEEE'].map((presetColor) => (
+                    {['90CAF9', 'CE93D8', 'F48FB1', 'FFB74D', '81C784', 'FFF176', 'FFB74D', 'FF8A65', 'A1887F', '90A4AE', 'AB47BC', '26C6DA'].map((presetColor) => (
                       <button
                         key={presetColor}
                         type="button"
