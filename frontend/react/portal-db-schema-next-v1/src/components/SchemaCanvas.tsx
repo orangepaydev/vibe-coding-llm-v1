@@ -836,7 +836,11 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
           {renderGroups()}
 
           {/* Render relationship lines */}
-          <RelationshipLines tables={mutableSchema.tables} tablePositions={tablePositions} />
+          <RelationshipLines 
+            tables={mutableSchema.tables} 
+            tablePositions={tablePositions}
+            tableColors={new Map(layout?.entities.map(e => [e.name, e.color]) || [])}
+          />
 
           {/* Render tables */}
           {mutableSchema.tables.map((table) => {

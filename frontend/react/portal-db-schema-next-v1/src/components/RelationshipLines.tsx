@@ -6,6 +6,7 @@ import { Table } from "@/lib/schema-parser";
 interface RelationshipLinesProps {
   tables: Table[];
   tablePositions: Map<string, { x: number; y: number }>;
+  tableColors: Map<string, string>;
 }
 
 interface Point {
@@ -18,7 +19,7 @@ const TABLE_WIDTH = 250;
 const TABLE_HEADER_HEIGHT = 40;
 const COLUMN_HEIGHT = 28;
 
-export function RelationshipLines({ tables, tablePositions }: RelationshipLinesProps) {
+export function RelationshipLines({ tables, tablePositions, tableColors }: RelationshipLinesProps) {
   // Calculate the height of a table based on its columns
   const getTableHeight = (table: Table): number => {
     const columnsHeight = table.columns.length * COLUMN_HEIGHT;
@@ -61,17 +62,23 @@ export function RelationshipLines({ tables, tablePositions }: RelationshipLinesP
     from: string;
     to: string;
     fkName: string;
+    color: string;
   }> = [];
 
   tables.forEach((table) => {
+    const tableColor = tableColors.get(table.name) || "6B7280";
     table.foreignKeys.forEach((fk) => {
       relationships.push({
         from: table.name,
         to: fk.toTable,
         fkName: fk.name,
+        color: tableColor,
       });
     });
   });
+
+  // Get unique colors for creating markers
+  const uniqueColors = Array.from(new Set(relationships.map(rel => rel.color)));
 
   return (
     <svg
@@ -83,27 +90,34 @@ export function RelationshipLines({ tables, tablePositions }: RelationshipLinesP
       }}
     >
       <defs>
-        {/* Arrow marker for the end of the line */}
-        <marker
-          id="arrowhead"
-          markerWidth="10"
-          markerHeight="10"
-          refX="9"
-          refY="3"
-          orient="auto"
-        >
-          <polygon points="0 0, 10 3, 0 6" fill="#6B7280" />
-        </marker>
-        {/* Circle marker for the start of the line */}
-        <marker
-          id="circle"
-          markerWidth="8"
-          markerHeight="8"
-          refX="4"
-          refY="4"
-        >
-          <circle cx="4" cy="4" r="3" fill="white" stroke="#6B7280" strokeWidth="1.5" />
-        </marker>
+        {uniqueColors.map(color => {
+          const hexColor = color.startsWith('#') ? color : `#${color}`;
+          return (
+            <React.Fragment key={color}>
+              {/* Arrow marker for the end of the line */}
+              <marker
+                id={`arrowhead-${color}`}
+                markerWidth="10"
+                markerHeight="10"
+                refX="9"
+                refY="3"
+                orient="auto"
+              >
+                <polygon points="0 0, 10 3, 0 6" fill={hexColor} />
+              </marker>
+              {/* Circle marker for the start of the line */}
+              <marker
+                id={`circle-${color}`}
+                markerWidth="8"
+                markerHeight="8"
+                refX="4"
+                refY="4"
+              >
+                <circle cx="4" cy="4" r="3" fill="white" stroke={hexColor} strokeWidth="1.5" />
+              </marker>
+            </React.Fragment>
+          );
+        })}
       </defs>
 
       {relationships.map((rel, index) => {
@@ -113,16 +127,17 @@ export function RelationshipLines({ tables, tablePositions }: RelationshipLinesP
         if (!start || !end) return null;
 
         const path = createElbowPath(start, end);
+        const hexColor = rel.color.startsWith('#') ? rel.color : `#${rel.color}`;
 
         return (
           <g key={`${rel.from}-${rel.to}-${index}`}>
             <path
               d={path}
-              stroke="#6B7280"
-              strokeWidth="2"
+              stroke={hexColor}
+              strokeWidth="6"
               fill="none"
-              markerEnd="url(#arrowhead)"
-              markerStart="url(#circle)"
+              markerEnd={`url(#arrowhead-${rel.color})`}
+              markerStart={`url(#circle-${rel.color})`}
             />
           </g>
         );
