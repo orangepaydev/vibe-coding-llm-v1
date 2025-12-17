@@ -7,6 +7,7 @@ interface RelationshipLinesProps {
   tables: Table[];
   tablePositions: Map<string, { x: number; y: number }>;
   tableColors: Map<string, string>;
+  selectedTable: string | null;
 }
 
 interface Point {
@@ -19,7 +20,7 @@ const TABLE_WIDTH = 250;
 const TABLE_HEADER_HEIGHT = 40;
 const COLUMN_HEIGHT = 28;
 
-export function RelationshipLines({ tables, tablePositions, tableColors }: RelationshipLinesProps) {
+export function RelationshipLines({ tables, tablePositions, tableColors, selectedTable }: RelationshipLinesProps) {
   // Calculate the height of a table based on its columns
   const getTableHeight = (table: Table): number => {
     const columnsHeight = table.columns.length * COLUMN_HEIGHT;
@@ -128,6 +129,7 @@ export function RelationshipLines({ tables, tablePositions, tableColors }: Relat
 
         const path = createElbowPath(start, end);
         const hexColor = rel.color.startsWith('#') ? rel.color : `#${rel.color}`;
+        const isSelectedRelation = selectedTable && (rel.from === selectedTable || rel.to === selectedTable);
 
         return (
           <g key={`${rel.from}-${rel.to}-${index}`}>
@@ -136,6 +138,7 @@ export function RelationshipLines({ tables, tablePositions, tableColors }: Relat
               stroke={hexColor}
               strokeWidth="6"
               fill="none"
+              strokeDasharray={isSelectedRelation ? "10 5" : "none"}
               markerEnd={`url(#arrowhead-${rel.color})`}
               markerStart={`url(#circle-${rel.color})`}
             />

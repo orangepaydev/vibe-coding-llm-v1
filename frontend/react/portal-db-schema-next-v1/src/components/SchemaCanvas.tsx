@@ -840,6 +840,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
             tables={mutableSchema.tables} 
             tablePositions={tablePositions}
             tableColors={new Map(layout?.entities.map(e => [e.name, e.color]) || [])}
+            selectedTable={activeTable}
           />
 
           {/* Render tables */}
