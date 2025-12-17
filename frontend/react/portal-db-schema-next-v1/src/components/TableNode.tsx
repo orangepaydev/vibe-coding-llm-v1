@@ -34,6 +34,9 @@ interface TableNodeProps {
   onAddForeignKey: (tableName: string, fkName: string, toTable: string, columns: Array<{name: string, pk: string}>) => void;
   onEditForeignKey: (tableName: string, fkIndex: number, fkName: string, toTable: string, columns: Array<{name: string, pk: string}>) => void;
   onRemoveForeignKey: (tableName: string, fkIndex: number) => void;
+  onAddIndex: (tableName: string, indexName: string, unique: string, columns: string[]) => void;
+  onEditIndex: (tableName: string, indexIndex: number, indexName: string, unique: string, columns: string[]) => void;
+  onRemoveIndex: (tableName: string, indexIndex: number) => void;
   allTables: Table[];
 }
 
@@ -59,6 +62,9 @@ export function TableNode({
   onAddForeignKey,
   onEditForeignKey,
   onRemoveForeignKey,
+  onAddIndex,
+  onEditIndex,
+  onRemoveIndex,
   allTables,
 }: TableNodeProps) {
   const [isDragging, setIsDragging] = React.useState(false);
@@ -84,6 +90,10 @@ export function TableNode({
   const [fkName, setFkName] = React.useState("");
   const [fkToTable, setFkToTable] = React.useState("");
   const [fkColumnMappings, setFkColumnMappings] = React.useState<Array<{name: string, pk: string}>>([{name: "", pk: ""}]);
+  const [editingIndexIndex, setEditingIndexIndex] = React.useState<number | null>(null);
+  const [indexName, setIndexName] = React.useState("");
+  const [indexUnique, setIndexUnique] = React.useState("INDEX");
+  const [indexColumns, setIndexColumns] = React.useState<string[]>([]);
 
   useEffect(() => {
     setPosition({ x, y });
@@ -229,6 +239,11 @@ export function TableNode({
     setFkName("");
     setFkToTable("");
     setFkColumnMappings([{name: "", pk: ""}]);
+    // Reset index editing state
+    setEditingIndexIndex(null);
+    setIndexName("");
+    setIndexUnique("INDEX");
+    setIndexColumns([]);
     setIsEditTableDialogOpen(true);
   };
 
@@ -267,6 +282,49 @@ export function TableNode({
     setFkName("");
     setFkToTable("");
     setFkColumnMappings([{name: "", pk: ""}]);
+  };
+
+  const handleOpenIndexDialog = (indexIndex?: number) => {
+    if (indexIndex !== undefined && indexIndex !== null) {
+      // Edit existing index
+      const index = table.indexes[indexIndex];
+      setEditingIndexIndex(indexIndex);
+      setIndexName(index.name);
+      setIndexUnique(index.unique);
+      setIndexColumns([...index.columns]);
+    } else {
+      // Add new index
+      setEditingIndexIndex(null);
+      setIndexName(`idx_${table.name}_`);
+      setIndexUnique("INDEX");
+      setIndexColumns([]);
+    }
+  };
+
+  const handleSubmitIndex = () => {
+    if (!indexName.trim() || indexColumns.length === 0) {
+      return; // Validation failed
+    }
+
+    if (editingIndexIndex !== null) {
+      onEditIndex(table.name, editingIndexIndex, indexName.trim(), indexUnique, indexColumns);
+    } else {
+      onAddIndex(table.name, indexName.trim(), indexUnique, indexColumns);
+    }
+
+    // Reset form
+    setEditingIndexIndex(null);
+    setIndexName("");
+    setIndexUnique("INDEX");
+    setIndexColumns([]);
+  };
+
+  const toggleIndexColumn = (columnName: string) => {
+    if (indexColumns.includes(columnName)) {
+      setIndexColumns(indexColumns.filter(col => col !== columnName));
+    } else {
+      setIndexColumns([...indexColumns, columnName]);
+    }
   };
 
   const addFKColumn = () => {
@@ -844,6 +902,157 @@ export function TableNode({
                   </div>
                 )}
               </div>
+
+              {/* Indexes Section */}
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">
+                    Indexes
+                  </label>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenIndexDialog();
+                    }}
+                    className="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded"
+                  >
+                    + Add Index
+                  </button>
+                </div>
+
+                {table.indexes.length === 0 ? (
+                  <p className="text-xs text-gray-500 italic">No indexes defined</p>
+                ) : (
+                  <div className="space-y-2">
+                    {table.indexes.map((index, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                        <div className="flex-1">
+                          <div className="text-xs font-semibold flex items-center gap-2">
+                            {index.name}
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                              index.unique === 'PRIMARY_KEY' ? 'bg-blue-100 text-blue-700' :
+                              index.unique === 'UNIQUE' ? 'bg-purple-100 text-purple-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {index.unique === 'PRIMARY_KEY' ? 'PK' : 
+                               index.unique === 'UNIQUE' ? 'UNIQUE' : 
+                               'INDEX'}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            Columns: {index.columns.join(", ")}
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          {index.unique !== 'PRIMARY_KEY' && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenIndexDialog(idx);
+                                }}
+                                className="px-2 py-1 text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded"
+                              >
+                                ✎ Edit
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRemoveIndex(table.name, idx);
+                                }}
+                                className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded"
+                              >
+                                ✕ Remove
+                              </button>
+                            </>
+                          )}
+                          {index.unique === 'PRIMARY_KEY' && (
+                            <span className="px-2 py-1 text-xs text-gray-400 italic">
+                              (Primary Key - edit via columns)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Index Edit Form - shown when editing/adding */}
+                {(editingIndexIndex !== null || indexName !== "") && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-md space-y-3">
+                    <div className="text-sm font-medium text-green-900">
+                      {editingIndexIndex !== null ? "Edit" : "Add"} Index
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Index Name</label>
+                      <input
+                        type="text"
+                        value={indexName}
+                        onChange={(e) => setIndexName(e.target.value)}
+                        placeholder="idx_table_column"
+                        className="w-full px-2 py-1 border rounded text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Index Type</label>
+                      <select
+                        value={indexUnique}
+                        onChange={(e) => setIndexUnique(e.target.value)}
+                        className="w-full px-2 py-1 border rounded text-xs"
+                      >
+                        <option value="INDEX">INDEX (Non-unique)</option>
+                        <option value="UNIQUE">UNIQUE</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium">Columns</label>
+                      <div className="space-y-1 max-h-40 overflow-y-auto border rounded p-2 bg-white">
+                        {table.columns.map((col) => (
+                          <label key={col.name} className="flex items-center gap-2 text-xs hover:bg-gray-50 p-1 rounded cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={indexColumns.includes(col.name)}
+                              onChange={() => toggleIndexColumn(col.name)}
+                              className="rounded"
+                            />
+                            <span>{col.name}</span>
+                            <span className="text-gray-500 text-[10px]">({col.type})</span>
+                          </label>
+                        ))}
+                      </div>
+                      {indexColumns.length > 0 && (
+                        <div className="text-xs text-gray-600 bg-white p-2 rounded border">
+                          Selected order: <span className="font-mono">{indexColumns.join(", ")}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        onClick={() => {
+                          setEditingIndexIndex(null);
+                          setIndexName("");
+                          setIndexUnique("INDEX");
+                          setIndexColumns([]);
+                        }}
+                        className="px-3 py-1 text-xs border rounded hover:bg-gray-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSubmitIndex}
+                        disabled={!indexName.trim() || indexColumns.length === 0}
+                        className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
+                      >
+                        {editingIndexIndex !== null ? "Update" : "Add"} Index
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
             
             <DialogFooter>
@@ -861,6 +1070,10 @@ export function TableNode({
                   setFkName("");
                   setFkToTable("");
                   setFkColumnMappings([{name: "", pk: ""}]);
+                  setEditingIndexIndex(null);
+                  setIndexName("");
+                  setIndexUnique("INDEX");
+                  setIndexColumns([]);
                 }}
                 className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
               >

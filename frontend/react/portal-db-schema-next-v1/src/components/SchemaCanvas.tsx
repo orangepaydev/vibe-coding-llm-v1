@@ -529,6 +529,85 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     });
   };
 
+  const handleAddIndex = (
+    tableName: string,
+    indexName: string,
+    unique: string,
+    columns: string[]
+  ) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const newIndexes = [...newTable.indexes];
+      
+      newIndexes.push({
+        name: indexName,
+        unique,
+        columns,
+      });
+      
+      newTable.indexes = newIndexes;
+      newSchema.tables = [...newSchema.tables];
+      newSchema.tables[tableIndex] = newTable;
+      
+      return newSchema;
+    });
+  };
+
+  const handleEditIndex = (
+    tableName: string,
+    indexIndex: number,
+    indexName: string,
+    unique: string,
+    columns: string[]
+  ) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const newIndexes = [...newTable.indexes];
+      
+      if (indexIndex >= 0 && indexIndex < newIndexes.length) {
+        newIndexes[indexIndex] = {
+          name: indexName,
+          unique,
+          columns,
+        };
+        
+        newTable.indexes = newIndexes;
+        newSchema.tables = [...newSchema.tables];
+        newSchema.tables[tableIndex] = newTable;
+      }
+      
+      return newSchema;
+    });
+  };
+
+  const handleRemoveIndex = (tableName: string, indexIndex: number) => {
+    setMutableSchema((prevSchema) => {
+      const newSchema = { ...prevSchema };
+      const tableIndex = newSchema.tables.findIndex((t) => t.name === tableName);
+      if (tableIndex === -1) return prevSchema;
+      
+      const newTable = { ...newSchema.tables[tableIndex] };
+      const newIndexes = [...newTable.indexes];
+      
+      if (indexIndex >= 0 && indexIndex < newIndexes.length) {
+        newIndexes.splice(indexIndex, 1);
+        newTable.indexes = newIndexes;
+        newSchema.tables = [...newSchema.tables];
+        newSchema.tables[tableIndex] = newTable;
+      }
+      
+      return newSchema;
+    });
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setSaveMessage(null);
@@ -952,6 +1031,9 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                 onAddForeignKey={handleAddForeignKey}
                 onEditForeignKey={handleEditForeignKey}
                 onRemoveForeignKey={handleRemoveForeignKey}
+                onAddIndex={handleAddIndex}
+                onEditIndex={handleEditIndex}
+                onRemoveIndex={handleRemoveIndex}
                 allTables={mutableSchema.tables}
               />
             );
