@@ -19,6 +19,7 @@ interface TableNodeProps {
   color: string;
   isActive: boolean;
   isSelected: boolean;
+  isDimmed: boolean;
   relationshipLabel?: string;
   onDragStart: (tableName: string, x: number, y: number) => void;
   onDragMove: (tableName: string, x: number, y: number) => void;
@@ -47,6 +48,7 @@ export function TableNode({
   color,
   isActive,
   isSelected,
+  isDimmed,
   relationshipLabel,
   onDragStart,
   onDragMove,
@@ -416,7 +418,8 @@ export function TableNode({
           backgroundColor: `#${color}`,
           borderWidth: '2px',
           borderStyle: 'solid',
-          borderColor: '#9ca3af'
+          borderColor: '#9ca3af',
+          opacity: isDimmed ? 0.2 : 1
         }}
       >
         {/* Table Header */}

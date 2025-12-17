@@ -991,8 +991,9 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
             const position = tablePositions.get(table.name);
             if (!position) return null;
 
-            // Calculate relationship label
+            // Calculate relationship label and dimming
             let relationshipLabel = "";
+            let isDimmed = false;
             if (activeTable) {
               // Check if this table has a FK to the selected table (selected table is PK)
               const hasFKToSelected = table.foreignKeys.some(fk => fk.toTable === activeTable);
@@ -1006,6 +1007,9 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
               if (selectedHasFKToThis) {
                 relationshipLabel = "(PK)";
               }
+              
+              // Dim tables that are not related to the selected table
+              isDimmed = table.name !== activeTable && !hasFKToSelected && !selectedHasFKToThis;
             }
 
             return (
@@ -1017,6 +1021,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                 color={getTableColor(table.name)}
                 isActive={activeTable === table.name}
                 isSelected={activeTable === table.name}
+                isDimmed={isDimmed}
                 relationshipLabel={relationshipLabel}
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
