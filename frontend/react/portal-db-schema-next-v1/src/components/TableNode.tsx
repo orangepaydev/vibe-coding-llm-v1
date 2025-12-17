@@ -431,13 +431,13 @@ export function TableNode({
           title={table.comment || undefined}
         >
           <div className="flex items-center gap-1">
-            <span>{table.name}{relationshipLabel ? ` ${relationshipLabel}` : ""}</span>
-            {table.comment && <span className="text-xs opacity-70" title={table.comment}>💬</span>}
-            {isSelected && <span className="ml-2 text-xs">(selected)</span>}
+            <span className="truncate">{table.name}{relationshipLabel ? ` ${relationshipLabel}` : ""}</span>
+            {table.comment && <span className="text-xs opacity-70 flex-shrink-0" title={table.comment}>💬</span>}
+            {isSelected && <span className="ml-2 text-xs flex-shrink-0">(selected)</span>}
           </div>
           {table.comment && (
-            <div className="text-xs font-normal opacity-80 mt-1 line-clamp-2">
-              {table.comment}
+            <div className="text-xs font-normal opacity-80 mt-1 overflow-hidden text-ellipsis line-clamp-2 break-words">
+              {table.comment.length > 30 ? `${table.comment.substring(0, 30)}...` : table.comment}
             </div>
           )}
         </div>
