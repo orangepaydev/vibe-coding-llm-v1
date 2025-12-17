@@ -185,7 +185,8 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     isPrimary?: boolean,
     isUnique?: boolean,
     isNotNull?: boolean,
-    defaultValue?: string
+    defaultValue?: string,
+    comment?: string
   ) => {
     setMutableSchema((prevSchema) => {
       const newSchema = { ...prevSchema };
@@ -201,6 +202,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
         length,
         mandatory: isNotNull || isPrimary || false,
         defaultValue,
+        comment,
       };
       
       newColumns.push(newColumn);
@@ -255,7 +257,8 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     isPrimary?: boolean,
     isUnique?: boolean,
     isNotNull?: boolean,
-    defaultValue?: string
+    defaultValue?: string,
+    comment?: string
   ) => {
     setMutableSchema((prevSchema) => {
       const newSchema = { ...prevSchema };
@@ -273,6 +276,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
         length,
         mandatory: isNotNull || isPrimary || false,
         defaultValue,
+        comment,
       };
       newTable.columns = newColumns;
       
