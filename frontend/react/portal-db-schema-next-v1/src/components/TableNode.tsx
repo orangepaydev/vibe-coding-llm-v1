@@ -72,6 +72,8 @@ export function TableNode({
   const [isDragging, setIsDragging] = React.useState(false);
   const [position, setPosition] = React.useState({ x, y });
   const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
+  const [dragStartPos, setDragStartPos] = React.useState({ x: 0, y: 0 });
+  const [hasMoved, setHasMoved] = React.useState(false);
   const nodeRef = useRef<HTMLDivElement>(null);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [editingColumnIndex, setEditingColumnIndex] = React.useState<number | null>(null);
@@ -105,9 +107,6 @@ export function TableNode({
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return; // Only left click
     
-    // Bring table to front on click
-    onClick(table.name);
-    
     const rect = nodeRef.current?.getBoundingClientRect();
     if (rect) {
       setDragOffset({
@@ -116,6 +115,8 @@ export function TableNode({
       });
     }
     
+    setDragStartPos({ x: e.clientX, y: e.clientY });
+    setHasMoved(false);
     setIsDragging(true);
     onDragStart(table.name, position.x, position.y);
     e.preventDefault();
@@ -128,6 +129,16 @@ export function TableNode({
       const canvas = nodeRef.current?.parentElement;
       if (!canvas) return;
 
+      // Check if user has moved more than a small threshold (5px)
+      const distanceMoved = Math.sqrt(
+        Math.pow(e.clientX - dragStartPos.x, 2) + 
+        Math.pow(e.clientY - dragStartPos.y, 2)
+      );
+      
+      if (distanceMoved > 5) {
+        setHasMoved(true);
+      }
+
       const rect = canvas.getBoundingClientRect();
       const newX = e.clientX - rect.left - dragOffset.x;
       const newY = e.clientY - rect.top - dragOffset.y;
@@ -139,6 +150,11 @@ export function TableNode({
     const handleMouseUp = () => {
       setIsDragging(false);
       onDragEnd(table.name, position.x, position.y);
+      
+      // Only call onClick if the user didn't drag (just clicked)
+      if (!hasMoved) {
+        onClick(table.name);
+      }
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -148,7 +164,7 @@ export function TableNode({
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging, dragOffset, position, table.name, onDragMove, onDragEnd]);
+  }, [isDragging, dragOffset, position, table.name, onDragMove, onDragEnd, dragStartPos, hasMoved, onClick]);
 
   const handleOpenAddDialog = () => {
     setEditingColumnIndex(null);
