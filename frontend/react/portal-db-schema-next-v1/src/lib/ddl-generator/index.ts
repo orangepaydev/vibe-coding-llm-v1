@@ -49,3 +49,5 @@ export { PostgreSQLGenerator } from './postgresql';
 export { MySQLGenerator } from './mysql';
 export { MariaDBGenerator } from './mariadb';
 export { OracleGenerator } from './oracle';
+export { FlywayGenerator } from './flyway';
+export type { FlywayMigrationOptions, FlywayMigrationResult } from './flyway';
