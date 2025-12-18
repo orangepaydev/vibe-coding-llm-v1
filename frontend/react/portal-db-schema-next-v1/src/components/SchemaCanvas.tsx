@@ -1066,6 +1066,8 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                 isSelected={activeTable === table.name}
                 isDimmed={isDimmed}
                 relationshipLabel={relationshipLabel}
+                zoom={zoom}
+                pan={pan}
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}

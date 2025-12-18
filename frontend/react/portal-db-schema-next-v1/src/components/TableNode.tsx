@@ -21,6 +21,8 @@ interface TableNodeProps {
   isSelected: boolean;
   isDimmed: boolean;
   relationshipLabel?: string;
+  zoom: number;
+  pan: { x: number; y: number };
   onDragStart: (tableName: string, x: number, y: number) => void;
   onDragMove: (tableName: string, x: number, y: number) => void;
   onDragEnd: (tableName: string, x: number, y: number) => void;
@@ -50,6 +52,8 @@ export function TableNode({
   isSelected,
   isDimmed,
   relationshipLabel,
+  zoom,
+  pan,
   onDragStart,
   onDragMove,
   onDragEnd,
@@ -121,11 +125,17 @@ export function TableNode({
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return; // Only left click
     
-    const rect = nodeRef.current?.getBoundingClientRect();
-    if (rect) {
+    const canvas = nodeRef.current?.parentElement;
+    if (canvas) {
+      const canvasRect = canvas.getBoundingClientRect();
+      // Calculate the mouse position in canvas coordinates (accounting for zoom and pan)
+      const canvasX = (e.clientX - canvasRect.left - pan.x) / zoom;
+      const canvasY = (e.clientY - canvasRect.top - pan.y) / zoom;
+      
+      // Calculate offset from table position to mouse position in canvas space
       setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        x: canvasX - position.x,
+        y: canvasY - position.y,
       });
     }
     
@@ -154,8 +164,9 @@ export function TableNode({
       }
 
       const rect = canvas.getBoundingClientRect();
-      const newX = e.clientX - rect.left - dragOffset.x;
-      const newY = e.clientY - rect.top - dragOffset.y;
+      // Account for zoom and pan transformations
+      const newX = (e.clientX - rect.left - pan.x) / zoom - dragOffset.x;
+      const newY = (e.clientY - rect.top - pan.y) / zoom - dragOffset.y;
 
       setPosition({ x: newX, y: newY });
       onDragMove(table.name, newX, newY);
