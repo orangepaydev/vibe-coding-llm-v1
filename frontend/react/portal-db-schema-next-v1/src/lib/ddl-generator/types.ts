@@ -5,6 +5,7 @@ export enum DatabaseType {
   MARIADB = 'MariaDB',
   MYSQL = 'MySQL',
   ORACLE = 'Oracle',
+  FLYWAY = 'Flyway',
 }
 
 export interface DDLGenerator {

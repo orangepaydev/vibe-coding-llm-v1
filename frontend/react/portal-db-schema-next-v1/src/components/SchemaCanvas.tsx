@@ -44,6 +44,10 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
   const [selectedDatabase, setSelectedDatabase] = useState<DatabaseType | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateMessage, setGenerateMessage] = useState<string | null>(null);
+  const [flywayVersion, setFlywayVersion] = useState("1");
+  const [flywayDescription, setFlywayDescription] = useState("initial_schema");
+  const [flywayBaseDb, setFlywayBaseDb] = useState<DatabaseType>(DatabaseType.POSTGRESQL);
+  const [includeUndo, setIncludeUndo] = useState(false);
 
   const layout = mutableSchema.layouts[layoutIndex];
   // Update mutable schema when prop changes
@@ -650,12 +654,35 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
     setGenerateMessage(null);
 
     try {
-      // Generate DDL using the appropriate generator
-      const ddl = DDLGeneratorFactory.generateDDL(mutableSchema, selectedDatabase);
+      let ddl: string;
+      let sqlFilename: string;
+      let undoDdl: string | undefined;
+      let undoFilename: string | undefined;
 
-      // Extract filename without extension
-      const filenameWithoutExt = filename.replace(/\.dbs$/, '');
-      const sqlFilename = `${filenameWithoutExt}-${selectedDatabase}.sql`;
+      if (selectedDatabase === DatabaseType.FLYWAY) {
+        // Import FlywayGenerator dynamically
+        const { FlywayGenerator } = await import('@/lib/ddl-generator');
+        
+        const flyway = new FlywayGenerator({
+          databaseType: flywayBaseDb,
+          version: flywayVersion,
+          description: flywayDescription,
+          includeUndo,
+        });
+
+        const migration = flyway.generateFlywayMigration(mutableSchema);
+        ddl = migration.content;
+        sqlFilename = migration.filename;
+        undoDdl = migration.undoContent;
+        undoFilename = migration.undoFilename;
+      } else {
+        // Generate DDL using the appropriate generator
+        ddl = DDLGeneratorFactory.generateDDL(mutableSchema, selectedDatabase);
+
+        // Extract filename without extension
+        const filenameWithoutExt = filename.replace(/\.dbs$/, '');
+        sqlFilename = `${filenameWithoutExt}-${selectedDatabase}.sql`;
+      }
 
       // Save the generated SQL file
       const response = await fetch('/api/save-sql', {
@@ -672,7 +699,23 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
       const result = await response.json();
 
       if (response.ok) {
-        setGenerateMessage(`✓ Generated ${sqlFilename} successfully`);
+        // Save undo migration if present
+        if (undoDdl && undoFilename) {
+          await fetch('/api/save-sql', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              filename: undoFilename,
+              content: undoDdl,
+            }),
+          });
+          setGenerateMessage(`✓ Generated ${sqlFilename} and ${undoFilename} successfully`);
+        } else {
+          setGenerateMessage(`✓ Generated ${sqlFilename} successfully`);
+        }
+        
         setTimeout(() => {
           setGenerateMessage(null);
           setIsGenerateSchemaDialogOpen(false);
@@ -1096,7 +1139,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
       
       {/* Generate Schema Dialog */}
       <Dialog open={isGenerateSchemaDialogOpen} onOpenChange={setIsGenerateSchemaDialogOpen}>
-        <DialogContent onClick={(e) => e.stopPropagation()}>
+        <DialogContent onClick={(e) => e.stopPropagation()} className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Generate Database Schema</DialogTitle>
             <DialogDescription>
@@ -1113,6 +1156,7 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                   DatabaseType.MYSQL,
                   DatabaseType.MARIADB,
                   DatabaseType.ORACLE,
+                  DatabaseType.FLYWAY,
                 ].map((dbType) => (
                   <button
                     key={dbType}
@@ -1128,6 +1172,61 @@ export function SchemaCanvas({ schema, layoutIndex = 0, filename = "schema.dbs" 
                 ))}
               </div>
             </div>
+            
+            {selectedDatabase === DatabaseType.FLYWAY && (
+              <div className="space-y-4 border-t pt-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Base Database</label>
+                  <select
+                    value={flywayBaseDb}
+                    onChange={(e) => setFlywayBaseDb(e.target.value as DatabaseType)}
+                    className="w-full px-3 py-2 border rounded-md text-sm"
+                  >
+                    <option value={DatabaseType.POSTGRESQL}>PostgreSQL</option>
+                    <option value={DatabaseType.MYSQL}>MySQL</option>
+                    <option value={DatabaseType.MARIADB}>MariaDB</option>
+                    <option value={DatabaseType.ORACLE}>Oracle</option>
+                  </select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Version</label>
+                    <input
+                      type="text"
+                      value={flywayVersion}
+                      onChange={(e) => setFlywayVersion(e.target.value)}
+                      placeholder="1"
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Description</label>
+                    <input
+                      type="text"
+                      value={flywayDescription}
+                      onChange={(e) => setFlywayDescription(e.target.value)}
+                      placeholder="initial_schema"
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="includeUndo"
+                    checked={includeUndo}
+                    onChange={(e) => setIncludeUndo(e.target.checked)}
+                    className="rounded"
+                  />
+                  <label htmlFor="includeUndo" className="text-sm">
+                    Include undo migration (Flyway Teams/Enterprise)
+                  </label>
+                </div>
+              </div>
+            )}
             
             {generateMessage && (
               <div className={`text-xs text-center py-2 rounded ${
