@@ -104,6 +104,20 @@ export function TableNode({
     setPosition({ x, y });
   }, [x, y]);
 
+  // Handle Escape key to unselect table
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSelected) {
+        onClick(table.name);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isSelected, onClick, table.name]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return; // Only left click
     
