@@ -19,6 +19,7 @@ export default function DesignerPage() {
     name,
     layoutType: 'flex',
     flexDirection: 'flex-row',
+    flexWrap: '',
     justifyContent: 'justify-start',
     alignItems: 'items-start',
     gridCols: '',
@@ -629,6 +630,24 @@ export default function DesignerPage() {
                     <option value="">None</option>
                     <option value="flex-row">flex-row</option>
                     <option value="flex-col">flex-col</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Flex Wrap
+                  </label>
+                  <select
+                    value={selectedPanel.flexWrap}
+                    onChange={(e) =>
+                      updatePanelProperty(selectedPanel.id, 'flexWrap', e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">None</option>
+                    <option value="flex-nowrap">flex-nowrap</option>
+                    <option value="flex-wrap">flex-wrap</option>
+                    <option value="flex-wrap-reverse">flex-wrap-reverse</option>
                   </select>
                 </div>
 

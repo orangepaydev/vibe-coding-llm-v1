@@ -12,6 +12,7 @@ interface PanelNode {
   name: string;
   layoutType: 'flex' | 'grid' | '';
   flexDirection: 'flex-row' | 'flex-col' | '';
+  flexWrap: 'flex-wrap' | 'flex-wrap-reverse' | 'flex-nowrap' | '';
   justifyContent: 'justify-start' | 'justify-center' | 'justify-end' | 'justify-between' | 'justify-around' | '';
   alignItems: 'items-start' | 'items-center' | 'items-end' | 'items-stretch' | '';
   gridCols: 'grid-cols-1' | 'grid-cols-2' | 'grid-cols-3' | 'grid-cols-4' | 'grid-cols-5' | 'grid-cols-6' | 'grid-cols-12' | '';
@@ -58,7 +59,7 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
 
   const layoutClasses = panel.layoutType === 'grid' 
     ? `grid ${panel.gridCols}`
-    : `flex ${panel.flexDirection}`;
+    : `flex ${panel.flexDirection} ${panel.flexWrap}`;
 
   const panelClasses = `
     ${layoutClasses} ${panel.justifyContent} ${panel.alignItems}

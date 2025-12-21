@@ -15,6 +15,7 @@ interface PanelNode {
   name: string;
   layoutType: 'flex' | 'grid' | '';
   flexDirection: 'flex-row' | 'flex-col' | '';
+  flexWrap: string;
   justifyContent: string;
   alignItems: string;
   gridCols: string;
@@ -137,7 +138,7 @@ function generatePanelCode(panel: PanelNode, depth: number = 0): string {
   
   const layoutClasses = panel.layoutType === 'grid' 
     ? `grid ${panel.gridCols}` 
-    : `flex ${panel.flexDirection}`;
+    : `flex ${panel.flexDirection} ${panel.flexWrap}`;
   
   const allClasses = [
     layoutClasses,
