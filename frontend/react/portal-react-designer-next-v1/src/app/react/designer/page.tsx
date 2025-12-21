@@ -2,16 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Split, Trash2 } from 'lucide-react';
-
-interface PanelNode {
-  id: string;
-  name: string;
-  flexDirection: 'flex-row' | 'flex-col' | '';
-  justifyContent: 'justify-start' | 'justify-center' | 'justify-end' | 'justify-between' | 'justify-around' | '';
-  alignItems: 'items-start' | 'items-center' | 'items-end' | 'items-stretch' | '';
-  backgroundColor: string;
-  children: PanelNode[];
-}
+import { DesignPanel, type PanelNode } from './Design';
 
 export default function DesignerPage() {
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
@@ -129,50 +120,6 @@ export default function DesignerPage() {
 
   const selectedPanel = selectedPanelId ? findPanelById(panels, selectedPanelId) : null;
 
-  const DesignPanel = ({ panel }: { panel: PanelNode }) => {
-    const isSelected = selectedPanelId === panel.id;
-    const hasChildren = panel.children.length > 0;
-
-    const panelClasses = `
-      flex ${panel.flexDirection} ${panel.justifyContent} ${panel.alignItems}
-      ${panel.backgroundColor}
-      ${hasChildren ? 'p-2 gap-2' : 'p-4'}
-      ${hasChildren ? 'min-h-[200px]' : 'min-h-[100px]'}
-      border-2 rounded-lg transition-all cursor-pointer
-      ${isSelected ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400'}
-    `.trim();
-
-    return (
-      <div
-        className={panelClasses}
-        onClick={(e) => {
-          e.stopPropagation();
-          setSelectedPanelId(panel.id);
-        }}
-      >
-        {hasChildren ? (
-          panel.children.map((child) => (
-            <div 
-              key={child.id} 
-              className={panel.flexDirection === 'flex-col' ? 'w-full flex-1' : 'flex-1 min-w-0'}
-            >
-              <DesignPanel panel={child} />
-            </div>
-          ))
-        ) : (
-          <div className="flex flex-col w-full h-full">
-            <div className="flex items-center justify-center p-2 border-b border-gray-200">
-              <div className="text-sm font-medium text-gray-600">{panel.name}</div>
-            </div>
-            <div className="flex-1 bg-gray-100 border-2 border-dashed border-gray-300 rounded m-2 flex items-center justify-center min-h-[60px]">
-              <div className="text-xs text-gray-400">Drop UI Components Here</div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gray-50">
       {/* UI Component Panel */}
@@ -239,7 +186,12 @@ export default function DesignerPage() {
               </div>
             ) : (
               panels.map((panel) => (
-                <DesignPanel key={panel.id} panel={panel} />
+                <DesignPanel 
+                  key={panel.id} 
+                  panel={panel} 
+                  selectedPanelId={selectedPanelId}
+                  onSelectPanel={setSelectedPanelId}
+                />
               ))
             )}
           </div>
@@ -282,9 +234,9 @@ export default function DesignerPage() {
                   >
                     <Plus className="w-4 h-4" />
                     Add Panel
-                  </button>
-                  <button
-                    onClick={() => splitPanel(selectedPanel.id, 'horizontal')}
+              </button>
+              <button
+                onClick={() => splitPanel(selectedPanel.id, 'horizontal')}
                     className="w-full px-3 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600 flex items-center justify-center gap-2"
                   >
                     <Split className="w-4 h-4" />
