@@ -454,11 +454,11 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
             onDrop={handleDrop}
           >
             {hasComponents ? (
-              <div className="w-full h-full p-2 space-y-2 overflow-auto">
+              <div className="w-full h-full p-2 space-y-2 overflow-auto mt-4 mb-4">
                 {panel.components.map((component, index) => renderComponent(component, index))}
               </div>
             ) : (
-              <div className="text-xs text-gray-400">Drop UI Components Here</div>
+              <div className="text-xs text-gray-400 mt-4 mb-4">Drop UI Components Here</div>
             )}
           </div>
         </div>
