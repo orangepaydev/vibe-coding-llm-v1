@@ -160,8 +160,13 @@ export default function DesignerPage() {
             </div>
           ))
         ) : (
-          <div className="flex items-center justify-center w-full h-full">
-            <div className="text-sm font-medium text-gray-600">{panel.name}</div>
+          <div className="flex flex-col w-full h-full">
+            <div className="flex items-center justify-center p-2 border-b border-gray-200">
+              <div className="text-sm font-medium text-gray-600">{panel.name}</div>
+            </div>
+            <div className="flex-1 bg-gray-100 border-2 border-dashed border-gray-300 rounded m-2 flex items-center justify-center min-h-[60px]">
+              <div className="text-xs text-gray-400">Drop UI Components Here</div>
+            </div>
           </div>
         )}
       </div>
