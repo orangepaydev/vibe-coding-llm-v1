@@ -205,7 +205,11 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
             onDrop={(e) => handleComponentDrop(e, index)}
           >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
-            <input type="text" placeholder="Enter text" className="px-2 py-1 border border-gray-300 rounded text-sm" />
+            <input 
+              type={component.properties.inputType || 'text'} 
+              placeholder="Enter text" 
+              className="px-2 py-1 border border-gray-300 rounded text-sm" 
+            />
           </div>
         );
       case 'label':
@@ -234,7 +238,12 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
             onDrop={(e) => handleComponentDrop(e, index)}
           >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
-            <textarea placeholder="Enter text" rows={3} className="px-2 py-1 border border-gray-300 rounded text-sm resize-none" />
+            <textarea 
+              placeholder="Enter text" 
+              rows={component.properties.rows || 3} 
+              cols={component.properties.cols || 50}
+              className="px-2 py-1 border border-gray-300 rounded text-sm resize-none" 
+            />
           </div>
         );
       case 'select':
@@ -250,9 +259,9 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
           >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <select className="px-2 py-1 border border-gray-300 rounded text-sm">
-              <option>Option 1</option>
-              <option>Option 2</option>
-              <option>Option 3</option>
+              {(component.properties.options || ['Option 1', 'Option 2', 'Option 3']).map((opt: string, idx: number) => (
+                <option key={idx}>{opt}</option>
+              ))}
             </select>
           </div>
         );
@@ -260,30 +269,40 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
         return (
           <div 
             key={component.id} 
-            className={`flex items-center gap-2 p-2 ${wrapperClasses}`} 
+            className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} 
             onClick={handleComponentClick}
             draggable
             onDragStart={(e) => handleComponentDragStart(e, index)}
             onDragOver={(e) => handleComponentDragOver(e, index)}
             onDrop={(e) => handleComponentDrop(e, index)}
           >
-            <input type="radio" name={component.id} className="w-4 h-4" />
-            <label className="text-sm text-gray-700">{component.label}</label>
+            <label className="text-xs font-medium text-gray-700 mb-1">{component.label}</label>
+            {(component.properties.options || ['Option 1', 'Option 2', 'Option 3']).map((opt: string, idx: number) => (
+              <div key={idx} className="flex items-center gap-2">
+                <input type="radio" name={component.id} className="w-4 h-4" />
+                <label className="text-sm text-gray-700">{opt}</label>
+              </div>
+            ))}
           </div>
         );
       case 'checkbox':
         return (
           <div 
             key={component.id} 
-            className={`flex items-center gap-2 p-2 ${wrapperClasses}`} 
+            className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} 
             onClick={handleComponentClick}
             draggable
             onDragStart={(e) => handleComponentDragStart(e, index)}
             onDragOver={(e) => handleComponentDragOver(e, index)}
             onDrop={(e) => handleComponentDrop(e, index)}
           >
-            <input type="checkbox" className="w-4 h-4 border-gray-300 rounded" />
-            <label className="text-sm text-gray-700">{component.label}</label>
+            <label className="text-xs font-medium text-gray-700 mb-1">{component.label}</label>
+            {(component.properties.options || ['Option 1', 'Option 2', 'Option 3']).map((opt: string, idx: number) => (
+              <div key={idx} className="flex items-center gap-2">
+                <input type="checkbox" className="w-4 h-4 border-gray-300 rounded" />
+                <label className="text-sm text-gray-700">{opt}</label>
+              </div>
+            ))}
           </div>
         );
       case 'calendar':
@@ -361,16 +380,16 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
             <table className="w-full border border-gray-300 text-xs">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="border border-gray-300 px-2 py-1">Column 1</th>
-                  <th className="border border-gray-300 px-2 py-1">Column 2</th>
-                  <th className="border border-gray-300 px-2 py-1">Column 3</th>
+                  {(component.properties.columns || ['Column 1', 'Column 2', 'Column 3']).map((col: string, idx: number) => (
+                    <th key={idx} className="border border-gray-300 px-2 py-1">{col}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td className="border border-gray-300 px-2 py-1">Data 1</td>
-                  <td className="border border-gray-300 px-2 py-1">Data 2</td>
-                  <td className="border border-gray-300 px-2 py-1">Data 3</td>
+                  {(component.properties.columns || ['Column 1', 'Column 2', 'Column 3']).map((col: string, idx: number) => (
+                    <td key={idx} className="border border-gray-300 px-2 py-1">Data {idx + 1}</td>
+                  ))}
                 </tr>
               </tbody>
             </table>

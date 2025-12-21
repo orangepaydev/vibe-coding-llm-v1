@@ -154,7 +154,20 @@ export default function DesignerPage() {
       id: generateId(),
       type: componentType,
       label: componentType.charAt(0).toUpperCase() + componentType.slice(1),
-      properties: {},
+      properties: {
+        // TextArea specific
+        ...(componentType === 'textarea' && { rows: 3, cols: 50 }),
+        // Textbox specific
+        ...(componentType === 'textbox' && { inputType: 'text' }),
+        // Select, Radio, Checkbox specific
+        ...(['select', 'radio', 'checkbox'].includes(componentType) && { 
+          options: ['Option 1', 'Option 2', 'Option 3'] 
+        }),
+        // Table specific
+        ...(componentType === 'table' && { 
+          columns: ['Column 1', 'Column 2', 'Column 3'] 
+        }),
+      },
     };
 
     setPanels(
@@ -200,6 +213,19 @@ export default function DesignerPage() {
         })
       );
     }
+  };
+
+  const updateComponentProperty = (componentId: string, property: string, value: any) => {
+    const updateComponent = (nodes: PanelNode[]): PanelNode[] => {
+      return nodes.map(node => ({
+        ...node,
+        components: node.components?.map(c => 
+          c.id === componentId ? { ...c, properties: { ...c.properties, [property]: value } } : c
+        ),
+        children: updateComponent(node.children)
+      }));
+    };
+    setPanels(updateComponent(panels));
   };
 
   const uiComponents = [
@@ -370,6 +396,99 @@ export default function DesignerPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   />
                 </div>
+
+                {/* TextArea specific properties */}
+                {selectedComponent.type === 'textarea' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Rows
+                      </label>
+                      <input
+                        type="number"
+                        value={selectedComponent.properties.rows || 3}
+                        onChange={(e) => updateComponentProperty(selectedComponentId!, 'rows', parseInt(e.target.value))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        min="1"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Columns
+                      </label>
+                      <input
+                        type="number"
+                        value={selectedComponent.properties.cols || 50}
+                        onChange={(e) => updateComponentProperty(selectedComponentId!, 'cols', parseInt(e.target.value))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        min="1"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Textbox specific properties */}
+                {selectedComponent.type === 'textbox' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Input Type
+                    </label>
+                    <select
+                      value={selectedComponent.properties.inputType || 'text'}
+                      onChange={(e) => updateComponentProperty(selectedComponentId!, 'inputType', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    >
+                      <option value="text">Text</option>
+                      <option value="password">Password</option>
+                      <option value="email">Email</option>
+                      <option value="number">Number</option>
+                      <option value="tel">Telephone</option>
+                      <option value="url">URL</option>
+                      <option value="date">Date</option>
+                      <option value="file">File</option>
+                      <option value="color">Color</option>
+                    </select>
+                  </div>
+                )}
+
+                {/* Select, Radio, Checkbox options */}
+                {['select', 'radio', 'checkbox'].includes(selectedComponent.type) && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Options (one per line)
+                    </label>
+                    <textarea
+                      value={(selectedComponent.properties.options || []).join('\n')}
+                      onChange={(e) => {
+                        const options = e.target.value.split('\n').filter(opt => opt.trim());
+                        updateComponentProperty(selectedComponentId!, 'options', options);
+                      }}
+                      rows={5}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono"
+                      placeholder="Option 1\nOption 2\nOption 3"
+                    />
+                  </div>
+                )}
+
+                {/* Table columns */}
+                {selectedComponent.type === 'table' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Column Names (one per line)
+                    </label>
+                    <textarea
+                      value={(selectedComponent.properties.columns || []).join('\n')}
+                      onChange={(e) => {
+                        const columns = e.target.value.split('\n').filter(col => col.trim());
+                        updateComponentProperty(selectedComponentId!, 'columns', columns);
+                      }}
+                      rows={5}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono"
+                      placeholder="Column 1\nColumn 2\nColumn 3"
+                    />
+                  </div>
+                )}
+
                 <div className="pt-4 border-t">
                   <div className="text-xs text-gray-500 space-y-1">
                     <div><strong>ID:</strong> {selectedComponent.id}</div>
