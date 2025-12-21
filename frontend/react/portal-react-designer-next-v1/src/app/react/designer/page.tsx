@@ -18,9 +18,6 @@ export default function DesignerPage() {
         <div className={`h-full overflow-auto ${isLeftPanelCollapsed ? 'hidden' : 'block'}`}>
           <div className="p-4">
             <h2 className="text-lg font-semibold mb-4">UI Component Panel</h2>
-            <p className="text-sm text-gray-600">
-              Browse and select UI components to add to your design canvas.
-            </p>
           </div>
         </div>
         
@@ -75,9 +72,6 @@ export default function DesignerPage() {
         <div className={`h-full overflow-auto ${isRightPanelCollapsed ? 'hidden' : 'block'}`}>
           <div className="p-4">
             <h2 className="text-lg font-semibold mb-4">UI Property Panel</h2>
-            <p className="text-sm text-gray-600">
-              Configure properties, styles, and settings for selected UI components.
-            </p>
           </div>
         </div>
         
