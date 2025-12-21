@@ -455,7 +455,7 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
           >
             {hasComponents ? (
               /* Designer Panel render component */
-              <div className="w-full h-full p-2 space-y-2 overflow-auto mt-4 mb-4">
+              <div className={`w-full h-full p-2 overflow-auto mt-4 mb-4 flex ${panel.flexDirection || 'flex-col'} ${panel.flexDirection === 'flex-row' ? 'space-x-2' : 'space-y-2'} ${panel.flexWrap}`}>
                 {panel.components.map((component, index) => renderComponent(component, index))}
               </div>
             ) : (
