@@ -7,6 +7,9 @@ interface ComponentInstance {
   width: string;
   height: string;
   flexGrow: string;
+  padding: string;
+  margin: string;
+  border: string;
   properties: Record<string, any>;
 }
 
@@ -178,7 +181,7 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
       onSelectComponent(component.id);
     };
 
-    const wrapperClasses = `transition-all cursor-move rounded ${component.width} ${component.height} ${component.flexGrow} ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'} ${isDragging ? 'opacity-50' : ''}`;
+    const wrapperClasses = `transition-all cursor-move rounded ${component.width} ${component.height} ${component.flexGrow} ${component.padding} ${component.margin} ${component.border} ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'} ${isDragging ? 'opacity-50' : ''}`;
 
     switch (component.type) {
       case 'button':

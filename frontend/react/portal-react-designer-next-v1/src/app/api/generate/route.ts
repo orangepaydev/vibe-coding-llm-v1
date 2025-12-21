@@ -10,6 +10,9 @@ interface ComponentInstance {
   width: string;
   height: string;
   flexGrow: string;
+  padding: string;
+  margin: string;
+  border: string;
   properties: Record<string, any>;
 }
 
@@ -37,7 +40,7 @@ interface GenerateRequest {
 }
 
 function generateComponentCode(component: ComponentInstance): string {
-  const styleClasses = [component.width, component.height, component.flexGrow].filter(Boolean).join(' ');
+  const styleClasses = [component.width, component.height, component.flexGrow, component.padding, component.margin, component.border].filter(Boolean).join(' ');
   const divClass = styleClasses ? ` className="${styleClasses}"` : '';
   
   switch (component.type) {
