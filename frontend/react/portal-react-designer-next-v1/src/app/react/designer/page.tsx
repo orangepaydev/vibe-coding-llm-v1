@@ -192,6 +192,9 @@ export default function DesignerPage() {
       id: generateId(),
       type: componentType,
       label: componentType.charAt(0).toUpperCase() + componentType.slice(1),
+      width: '',
+      height: '',
+      flexGrow: '',
       properties: {
         // TextArea specific
         ...(componentType === 'textarea' && { rows: 3, cols: 50 }),
@@ -265,6 +268,34 @@ export default function DesignerPage() {
     };
     setPanels(updateComponent(panels));
   };
+
+  const updateComponentStyle = (componentId: string, styleProperty: 'width' | 'height' | 'flexGrow', value: string) => {
+    const updateComponent = (nodes: PanelNode[]): PanelNode[] => {
+      return nodes.map(node => ({
+        ...node,
+        components: node.components?.map(c => 
+          c.id === componentId ? { ...c, [styleProperty]: value } : c
+        ),
+        children: updateComponent(node.children)
+      }));
+    };
+    setPanels(updateComponent(panels));
+  };
+
+  const findParentPanelOfComponent = (nodes: PanelNode[], componentId: string): PanelNode | null => {
+    for (const node of nodes) {
+      if (node.components?.some(c => c.id === componentId)) {
+        return node;
+      }
+      if (node.children.length > 0) {
+        const found = findParentPanelOfComponent(node.children, componentId);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const parentPanel = selectedComponentId ? findParentPanelOfComponent(panels, selectedComponentId) : null;
 
   const uiComponents = [
     { type: 'button', label: 'Button', icon: SquareMousePointer },
@@ -450,6 +481,103 @@ export default function DesignerPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   />
                 </div>
+
+                {/* Flex Grow */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Flex Grow
+                  </label>
+                  <select
+                    value={selectedComponent.flexGrow || ''}
+                    onChange={(e) => updateComponentStyle(selectedComponentId!, 'flexGrow', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">None</option>
+                    <option value="flex-grow-0">flex-grow-0</option>
+                    <option value="flex-grow">flex-grow</option>
+                    <option value="flex-1">flex-1</option>
+                  </select>
+                </div>
+
+                {/* Width - show when parent has flex-row or when no specific direction */}
+                {parentPanel && (parentPanel.flexDirection === 'flex-row' || parentPanel.flexDirection === '') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Width
+                    </label>
+                    <select
+                      value={selectedComponent.width || ''}
+                      onChange={(e) => updateComponentStyle(selectedComponentId!, 'width', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    >
+                      <option value="">Auto</option>
+                      <optgroup label="Percentage">
+                        <option value="w-1/12">w-1/12 (8.33%)</option>
+                        <option value="w-1/6">w-1/6 (16.67%)</option>
+                        <option value="w-1/4">w-1/4 (25%)</option>
+                        <option value="w-1/3">w-1/3 (33.33%)</option>
+                        <option value="w-5/12">w-5/12 (41.67%)</option>
+                        <option value="w-1/2">w-1/2 (50%)</option>
+                        <option value="w-7/12">w-7/12 (58.33%)</option>
+                        <option value="w-2/3">w-2/3 (66.67%)</option>
+                        <option value="w-3/4">w-3/4 (75%)</option>
+                        <option value="w-5/6">w-5/6 (83.33%)</option>
+                        <option value="w-11/12">w-11/12 (91.67%)</option>
+                        <option value="w-full">w-full (100%)</option>
+                      </optgroup>
+                      <optgroup label="Fixed">
+                        <option value="w-32">w-32 (8rem)</option>
+                        <option value="w-40">w-40 (10rem)</option>
+                        <option value="w-48">w-48 (12rem)</option>
+                        <option value="w-56">w-56 (14rem)</option>
+                        <option value="w-64">w-64 (16rem)</option>
+                        <option value="w-72">w-72 (18rem)</option>
+                        <option value="w-80">w-80 (20rem)</option>
+                        <option value="w-96">w-96 (24rem)</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                )}
+
+                {/* Height - show when parent has flex-col */}
+                {parentPanel && parentPanel.flexDirection === 'flex-col' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Height
+                    </label>
+                    <select
+                      value={selectedComponent.height || ''}
+                      onChange={(e) => updateComponentStyle(selectedComponentId!, 'height', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    >
+                      <option value="">Auto</option>
+                      <optgroup label="Percentage">
+                        <option value="h-1/12">h-1/12 (8.33%)</option>
+                        <option value="h-1/6">h-1/6 (16.67%)</option>
+                        <option value="h-1/4">h-1/4 (25%)</option>
+                        <option value="h-1/3">h-1/3 (33.33%)</option>
+                        <option value="h-5/12">h-5/12 (41.67%)</option>
+                        <option value="h-1/2">h-1/2 (50%)</option>
+                        <option value="h-7/12">h-7/12 (58.33%)</option>
+                        <option value="h-2/3">h-2/3 (66.67%)</option>
+                        <option value="h-3/4">h-3/4 (75%)</option>
+                        <option value="h-5/6">h-5/6 (83.33%)</option>
+                        <option value="h-11/12">h-11/12 (91.67%)</option>
+                        <option value="h-full">h-full (100%)</option>
+                      </optgroup>
+                      <optgroup label="Fixed">
+                        <option value="h-32">h-32 (8rem)</option>
+                        <option value="h-40">h-40 (10rem)</option>
+                        <option value="h-48">h-48 (12rem)</option>
+                        <option value="h-56">h-56 (14rem)</option>
+                        <option value="h-64">h-64 (16rem)</option>
+                        <option value="h-72">h-72 (18rem)</option>
+                        <option value="h-80">h-80 (20rem)</option>
+                        <option value="h-96">h-96 (24rem)</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                )}
 
                 {/* TextArea specific properties */}
                 {selectedComponent.type === 'textarea' && (

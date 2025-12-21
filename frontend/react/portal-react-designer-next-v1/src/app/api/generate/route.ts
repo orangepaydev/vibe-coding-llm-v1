@@ -7,6 +7,9 @@ interface ComponentInstance {
   id: string;
   type: string;
   label: string;
+  width: string;
+  height: string;
+  flexGrow: string;
   properties: Record<string, any>;
 }
 
@@ -34,28 +37,35 @@ interface GenerateRequest {
 }
 
 function generateComponentCode(component: ComponentInstance): string {
+  const styleClasses = [component.width, component.height, component.flexGrow].filter(Boolean).join(' ');
+  const divClass = styleClasses ? ` className="${styleClasses}"` : '';
+  
   switch (component.type) {
     case 'button':
-      return `<Button>{${JSON.stringify(component.label)}}</Button>`;
+      return `<div${divClass}>
+  <Button>{${JSON.stringify(component.label)}}</Button>
+</div>`;
     
     case 'textbox':
-      return `<div className="space-y-2">
+      return `<div${divClass ? divClass : ' className="space-y-2"'}>
   <Label htmlFor="${component.id}">{${JSON.stringify(component.label)}}</Label>
   <Input id="${component.id}" type="${component.properties.inputType || 'text'}" placeholder="Enter text" />
 </div>`;
     
     case 'label':
-      return `<Label>{${JSON.stringify(component.label)}}</Label>`;
+      return `<div${divClass}>
+  <Label>{${JSON.stringify(component.label)}}</Label>
+</div>`;
     
     case 'textarea':
-      return `<div className="space-y-2">
+      return `<div${divClass ? divClass : ' className="space-y-2"'}>
   <Label htmlFor="${component.id}">{${JSON.stringify(component.label)}}</Label>
   <Textarea id="${component.id}" placeholder="Enter text" rows={${component.properties.rows || 3}} />
 </div>`;
     
     case 'select':
       const selectOptions = component.properties.options || ['Option 1', 'Option 2', 'Option 3'];
-      return `<div className="space-y-2">
+      return `<div${divClass ? divClass : ' className="space-y-2"'}>
   <Label htmlFor="${component.id}">{${JSON.stringify(component.label)}}</Label>
   <Select>
     <SelectTrigger id="${component.id}">
@@ -69,7 +79,7 @@ function generateComponentCode(component: ComponentInstance): string {
     
     case 'radio':
       const radioOptions = component.properties.options || ['Option 1', 'Option 2', 'Option 3'];
-      return `<div className="space-y-2">
+      return `<div${divClass ? divClass : ' className="space-y-2"'}>
   <Label>{${JSON.stringify(component.label)}}</Label>
   <RadioGroup defaultValue="option-1">
     ${radioOptions.map((opt: string, idx: number) => `<div className="flex items-center space-x-2">
@@ -81,7 +91,7 @@ function generateComponentCode(component: ComponentInstance): string {
     
     case 'checkbox':
       const checkboxOptions = component.properties.options || ['Option 1', 'Option 2', 'Option 3'];
-      return `<div className="space-y-2">
+      return `<div${divClass ? divClass : ' className="space-y-2"'}>
   <Label>{${JSON.stringify(component.label)}}</Label>
   ${checkboxOptions.map((opt: string, idx: number) => `<div className="flex items-center space-x-2">
     <Checkbox id="checkbox-${idx + 1}" />
@@ -91,26 +101,26 @@ function generateComponentCode(component: ComponentInstance): string {
     
     case 'calendar':
     case 'date':
-      return `<div className="space-y-2">
+      return `<div${divClass ? divClass : ' className="space-y-2"'}>
   <Label htmlFor="${component.id}">{${JSON.stringify(component.label)}}</Label>
   <Input id="${component.id}" type="date" />
 </div>`;
     
     case 'time':
-      return `<div className="space-y-2">
+      return `<div${divClass ? divClass : ' className="space-y-2"'}>
   <Label htmlFor="${component.id}">{${JSON.stringify(component.label)}}</Label>
   <Input id="${component.id}" type="time" />
 </div>`;
     
     case 'datetime':
-      return `<div className="space-y-2">
+      return `<div${divClass ? divClass : ' className="space-y-2"'}>
   <Label htmlFor="${component.id}">{${JSON.stringify(component.label)}}</Label>
   <Input id="${component.id}" type="datetime-local" />
 </div>`;
     
     case 'table':
       const columns = component.properties.columns || ['Column 1', 'Column 2', 'Column 3'];
-      return `<div className="space-y-2">
+      return `<div${divClass ? divClass : ' className="space-y-2"'}>
   <Label>{${JSON.stringify(component.label)}}</Label>
   <Table>
     <TableHeader>
