@@ -15,9 +15,15 @@ export default function DesignerPage() {
   const createNewPanel = (name: string): PanelNode => ({
     id: generateId(),
     name,
+    layoutType: 'flex',
     flexDirection: 'flex-row',
     justifyContent: 'justify-start',
     alignItems: 'items-start',
+    gridCols: '',
+    colSpan: '',
+    colStart: '',
+    rowSpan: '',
+    rowStart: '',
     backgroundColor: 'bg-white',
     children: [],
   });
@@ -260,6 +266,23 @@ export default function DesignerPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Layout Type
+                  </label>
+                  <select
+                    value={selectedPanel.layoutType}
+                    onChange={(e) =>
+                      updatePanelProperty(selectedPanel.id, 'layoutType', e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">None</option>
+                    <option value="flex">Flexbox</option>
+                    <option value="grid">Grid</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Flex Direction
                   </label>
                   <select
@@ -274,6 +297,30 @@ export default function DesignerPage() {
                     <option value="flex-col">flex-col</option>
                   </select>
                 </div>
+
+                {selectedPanel.layoutType === 'grid' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Grid Columns
+                    </label>
+                    <select
+                      value={selectedPanel.gridCols}
+                      onChange={(e) =>
+                        updatePanelProperty(selectedPanel.id, 'gridCols', e.target.value)
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    >
+                      <option value="">None</option>
+                      <option value="grid-cols-1">1 Column</option>
+                      <option value="grid-cols-2">2 Columns</option>
+                      <option value="grid-cols-3">3 Columns</option>
+                      <option value="grid-cols-4">4 Columns</option>
+                      <option value="grid-cols-5">5 Columns</option>
+                      <option value="grid-cols-6">6 Columns</option>
+                      <option value="grid-cols-12">12 Columns</option>
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -311,6 +358,94 @@ export default function DesignerPage() {
                     <option value="items-center">items-center</option>
                     <option value="items-end">items-end</option>
                     <option value="items-stretch">items-stretch</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Column Span
+                  </label>
+                  <select
+                    value={selectedPanel.colSpan}
+                    onChange={(e) =>
+                      updatePanelProperty(selectedPanel.id, 'colSpan', e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">None</option>
+                    <option value="col-span-1">col-span-1</option>
+                    <option value="col-span-2">col-span-2</option>
+                    <option value="col-span-3">col-span-3</option>
+                    <option value="col-span-4">col-span-4</option>
+                    <option value="col-span-5">col-span-5</option>
+                    <option value="col-span-6">col-span-6</option>
+                    <option value="col-span-full">col-span-full</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Column Start
+                  </label>
+                  <select
+                    value={selectedPanel.colStart}
+                    onChange={(e) =>
+                      updatePanelProperty(selectedPanel.id, 'colStart', e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">None</option>
+                    <option value="col-start-auto">col-start-auto</option>
+                    <option value="col-start-1">col-start-1</option>
+                    <option value="col-start-2">col-start-2</option>
+                    <option value="col-start-3">col-start-3</option>
+                    <option value="col-start-4">col-start-4</option>
+                    <option value="col-start-5">col-start-5</option>
+                    <option value="col-start-6">col-start-6</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Row Span
+                  </label>
+                  <select
+                    value={selectedPanel.rowSpan}
+                    onChange={(e) =>
+                      updatePanelProperty(selectedPanel.id, 'rowSpan', e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">None</option>
+                    <option value="row-span-1">row-span-1</option>
+                    <option value="row-span-2">row-span-2</option>
+                    <option value="row-span-3">row-span-3</option>
+                    <option value="row-span-4">row-span-4</option>
+                    <option value="row-span-5">row-span-5</option>
+                    <option value="row-span-6">row-span-6</option>
+                    <option value="row-span-full">row-span-full</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Row Start
+                  </label>
+                  <select
+                    value={selectedPanel.rowStart}
+                    onChange={(e) =>
+                      updatePanelProperty(selectedPanel.id, 'rowStart', e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">None</option>
+                    <option value="row-start-auto">row-start-auto</option>
+                    <option value="row-start-1">row-start-1</option>
+                    <option value="row-start-2">row-start-2</option>
+                    <option value="row-start-3">row-start-3</option>
+                    <option value="row-start-4">row-start-4</option>
+                    <option value="row-start-5">row-start-5</option>
+                    <option value="row-start-6">row-start-6</option>
                   </select>
                 </div>
 

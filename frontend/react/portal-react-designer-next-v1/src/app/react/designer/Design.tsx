@@ -3,9 +3,15 @@ import React from 'react';
 interface PanelNode {
   id: string;
   name: string;
+  layoutType: 'flex' | 'grid' | '';
   flexDirection: 'flex-row' | 'flex-col' | '';
   justifyContent: 'justify-start' | 'justify-center' | 'justify-end' | 'justify-between' | 'justify-around' | '';
   alignItems: 'items-start' | 'items-center' | 'items-end' | 'items-stretch' | '';
+  gridCols: 'grid-cols-1' | 'grid-cols-2' | 'grid-cols-3' | 'grid-cols-4' | 'grid-cols-5' | 'grid-cols-6' | 'grid-cols-12' | '';
+  colSpan: 'col-span-1' | 'col-span-2' | 'col-span-3' | 'col-span-4' | 'col-span-5' | 'col-span-6' | 'col-span-full' | '';
+  colStart: 'col-start-1' | 'col-start-2' | 'col-start-3' | 'col-start-4' | 'col-start-5' | 'col-start-6' | 'col-start-auto' | '';
+  rowSpan: 'row-span-1' | 'row-span-2' | 'row-span-3' | 'row-span-4' | 'row-span-5' | 'row-span-6' | 'row-span-full' | '';
+  rowStart: 'row-start-1' | 'row-start-2' | 'row-start-3' | 'row-start-4' | 'row-start-5' | 'row-start-6' | 'row-start-auto' | '';
   backgroundColor: string;
   children: PanelNode[];
 }
@@ -24,8 +30,13 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
   const isSelected = selectedPanelId === panel.id;
   const hasChildren = panel.children.length > 0;
 
+  const layoutClasses = panel.layoutType === 'grid' 
+    ? `grid ${panel.gridCols}`
+    : `flex ${panel.flexDirection}`;
+
   const panelClasses = `
-    flex ${panel.flexDirection} ${panel.justifyContent} ${panel.alignItems}
+    ${layoutClasses} ${panel.justifyContent} ${panel.alignItems}
+    ${panel.colSpan} ${panel.colStart} ${panel.rowSpan} ${panel.rowStart}
     ${panel.backgroundColor}
     ${hasChildren ? 'p-2 gap-2' : 'p-4'}
     ${hasChildren ? 'min-h-[200px]' : 'min-h-[100px]'}
