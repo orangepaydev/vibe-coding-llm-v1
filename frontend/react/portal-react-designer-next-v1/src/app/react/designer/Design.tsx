@@ -27,14 +27,18 @@ interface PanelNode {
 interface DesignPanelProps {
   panel: PanelNode;
   selectedPanelId: string | null;
+  selectedComponentId: string | null;
   onSelectPanel: (panelId: string) => void;
+  onSelectComponent: (componentId: string) => void;
   onDropComponent: (panelId: string, componentType: string) => void;
 }
 
 export const DesignPanel: React.FC<DesignPanelProps> = ({ 
   panel, 
-  selectedPanelId, 
+  selectedPanelId,
+  selectedComponentId,
   onSelectPanel,
+  onSelectComponent,
   onDropComponent
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
@@ -80,30 +84,38 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
   };
 
   const renderComponent = (component: ComponentInstance) => {
+    const isSelected = selectedComponentId === component.id;
+    const handleComponentClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onSelectComponent(component.id);
+    };
+
+    const wrapperClasses = `transition-all cursor-pointer rounded ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`;
+
     switch (component.type) {
       case 'textbox':
         return (
-          <div key={component.id} className="flex flex-col gap-1 p-2">
+          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="text" placeholder="Enter text" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'label':
         return (
-          <div key={component.id} className="p-2">
+          <div key={component.id} className={`p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <label className="text-sm font-medium text-gray-700">{component.label}</label>
           </div>
         );
       case 'textarea':
         return (
-          <div key={component.id} className="flex flex-col gap-1 p-2">
+          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <textarea placeholder="Enter text" rows={3} className="px-2 py-1 border border-gray-300 rounded text-sm resize-none" />
           </div>
         );
       case 'select':
         return (
-          <div key={component.id} className="flex flex-col gap-1 p-2">
+          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <select className="px-2 py-1 border border-gray-300 rounded text-sm">
               <option>Option 1</option>
@@ -114,49 +126,49 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
         );
       case 'radio':
         return (
-          <div key={component.id} className="flex items-center gap-2 p-2">
+          <div key={component.id} className={`flex items-center gap-2 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <input type="radio" name={component.id} className="w-4 h-4" />
             <label className="text-sm text-gray-700">{component.label}</label>
           </div>
         );
       case 'checkbox':
         return (
-          <div key={component.id} className="flex items-center gap-2 p-2">
+          <div key={component.id} className={`flex items-center gap-2 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <input type="checkbox" className="w-4 h-4 border-gray-300 rounded" />
             <label className="text-sm text-gray-700">{component.label}</label>
           </div>
         );
       case 'calendar':
         return (
-          <div key={component.id} className="flex flex-col gap-1 p-2">
+          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="date" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'date':
         return (
-          <div key={component.id} className="flex flex-col gap-1 p-2">
+          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="date" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'time':
         return (
-          <div key={component.id} className="flex flex-col gap-1 p-2">
+          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="time" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'datetime':
         return (
-          <div key={component.id} className="flex flex-col gap-1 p-2">
+          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="datetime-local" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'table':
         return (
-          <div key={component.id} className="p-2">
+          <div key={component.id} className={`p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
             <label className="text-xs font-medium text-gray-700 mb-2 block">{component.label}</label>
             <table className="w-full border border-gray-300 text-xs">
               <thead>
@@ -197,8 +209,10 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
           >
             <DesignPanel 
               panel={child} 
-              selectedPanelId={selectedPanelId} 
+              selectedPanelId={selectedPanelId}
+              selectedComponentId={selectedComponentId}
               onSelectPanel={onSelectPanel}
+              onSelectComponent={onSelectComponent}
               onDropComponent={onDropComponent}
             />
           </div>

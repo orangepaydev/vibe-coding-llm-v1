@@ -9,6 +9,7 @@ export default function DesignerPage() {
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
   const [panels, setPanels] = useState<PanelNode[]>([]);
   const [selectedPanelId, setSelectedPanelId] = useState<string | null>(null);
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
 
   const generateId = () => `panel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -126,6 +127,27 @@ export default function DesignerPage() {
   };
 
   const selectedPanel = selectedPanelId ? findPanelById(panels, selectedPanelId) : null;
+
+  const findComponentById = (nodes: PanelNode[], componentId: string): ComponentInstance | null => {
+    for (const node of nodes) {
+      if (node.components) {
+        const component = node.components.find(c => c.id === componentId);
+        if (component) return component;
+      }
+      if (node.children.length > 0) {
+        const found = findComponentById(node.children, componentId);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const selectedComponent = selectedComponentId ? findComponentById(panels, selectedComponentId) : null;
+
+  const handleSelectComponent = (componentId: string) => {
+    setSelectedComponentId(componentId);
+    setSelectedPanelId(null);
+  };
 
   const handleDropComponent = (panelId: string, componentType: string) => {
     const newComponent: ComponentInstance = {
@@ -245,7 +267,12 @@ export default function DesignerPage() {
                   key={panel.id} 
                   panel={panel} 
                   selectedPanelId={selectedPanelId}
-                  onSelectPanel={setSelectedPanelId}
+                  selectedComponentId={selectedComponentId}
+                  onSelectPanel={(panelId) => {
+                    setSelectedPanelId(panelId);
+                    setSelectedComponentId(null);
+                  }}
+                  onSelectComponent={handleSelectComponent}
                   onDropComponent={handleDropComponent}
                 />
               ))
@@ -264,7 +291,50 @@ export default function DesignerPage() {
           <div className="p-4">
             <h2 className="text-lg font-semibold mb-4">Properties</h2>
             
-            {selectedPanel ? (
+            {selectedComponent ? (
+              <div className="space-y-4">
+                <div className="text-sm font-medium text-blue-600 mb-2">Component Selected</div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Component Type
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedComponent.type}
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Label
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedComponent.label}
+                    onChange={(e) => {
+                      // Update component label
+                      const updateComponentLabel = (nodes: PanelNode[]): PanelNode[] => {
+                        return nodes.map(node => ({
+                          ...node,
+                          components: node.components?.map(c => 
+                            c.id === selectedComponentId ? { ...c, label: e.target.value } : c
+                          ),
+                          children: updateComponentLabel(node.children)
+                        }));
+                      };
+                      setPanels(updateComponentLabel(panels));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+                <div className="pt-4 border-t">
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <div><strong>ID:</strong> {selectedComponent.id}</div>
+                  </div>
+                </div>
+              </div>
+            ) : selectedPanel ? (
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
