@@ -10,6 +10,7 @@ export default function DesignerPage() {
   const [panels, setPanels] = useState<PanelNode[]>([]);
   const [selectedPanelId, setSelectedPanelId] = useState<string | null>(null);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
+  const [componentUrl, setComponentUrl] = useState<string>('');
 
   const generateId = () => `panel-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -35,6 +36,42 @@ export default function DesignerPage() {
     if (name) {
       const newPanel = createNewPanel(name);
       setPanels([...panels, newPanel]);
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!componentUrl.trim()) {
+      alert('Please enter a file name for the component');
+      return;
+    }
+
+    if (panels.length === 0) {
+      alert('Please add at least one panel before generating');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          panels: panels,
+          fileName: componentUrl.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`Component generated successfully!\n\nFile: ${data.filePath}\nComponent: ${data.componentName}`);
+      } else {
+        alert(`Error: ${data.error}\n${data.details || ''}`);
+      }
+    } catch (error) {
+      console.error('Failed to generate component:', error);
+      alert('Failed to generate component. Check console for details.');
     }
   };
 
@@ -303,13 +340,29 @@ export default function DesignerPage() {
         <div className="p-6 h-full">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold">UI Design Canvas</h1>
-            <button
-              onClick={addRootPanel}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              Add Panel
-            </button>
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={componentUrl}
+                onChange={(e) => setComponentUrl(e.target.value)}
+                placeholder="Enter file name (e.g., my-form.tsx)"
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+              />
+              <button
+                onClick={handleGenerate}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                Generate
+              </button>
+              <button
+                onClick={addRootPanel}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                Add Panel
+              </button>
+            </div>
           </div>
           
           <div className="flex flex-col gap-4">
