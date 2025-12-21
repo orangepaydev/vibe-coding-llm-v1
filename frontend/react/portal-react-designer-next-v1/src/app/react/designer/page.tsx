@@ -584,11 +584,17 @@ export default function DesignerPage() {
                     Padding
                   </label>
                   <select
-                    value={selectedComponent.padding || ''}
-                    onChange={(e) => updateComponentStyle(selectedComponentId!, 'padding', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const currentClasses = selectedComponent.padding || '';
+                        const newClasses = currentClasses ? `${currentClasses} ${e.target.value}` : e.target.value;
+                        updateComponentStyle(selectedComponentId!, 'padding', newClasses);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
                   >
-                    <option value="">None</option>
+                    <option value="">Select to add...</option>
                     <optgroup label="All Sides">
                       <option value="p-0">p-0 (0)</option>
                       <option value="p-1">p-1 (0.25rem)</option>
@@ -650,6 +656,13 @@ export default function DesignerPage() {
                       <option value="pl-8">pl-8 (2rem)</option>
                     </optgroup>
                   </select>
+                  <input
+                    type="text"
+                    value={selectedComponent.padding || ''}
+                    onChange={(e) => updateComponentStyle(selectedComponentId!, 'padding', e.target.value)}
+                    placeholder="e.g., p-4 pt-6"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono"
+                  />
                 </div>
 
                 {/* Margin */}
@@ -658,11 +671,17 @@ export default function DesignerPage() {
                     Margin
                   </label>
                   <select
-                    value={selectedComponent.margin || ''}
-                    onChange={(e) => updateComponentStyle(selectedComponentId!, 'margin', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const currentClasses = selectedComponent.margin || '';
+                        const newClasses = currentClasses ? `${currentClasses} ${e.target.value}` : e.target.value;
+                        updateComponentStyle(selectedComponentId!, 'margin', newClasses);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
                   >
-                    <option value="">None</option>
+                    <option value="">Select to add...</option>
                     <optgroup label="All Sides">
                       <option value="m-0">m-0 (0)</option>
                       <option value="m-1">m-1 (0.25rem)</option>
@@ -731,6 +750,13 @@ export default function DesignerPage() {
                       <option value="ml-auto">ml-auto</option>
                     </optgroup>
                   </select>
+                  <input
+                    type="text"
+                    value={selectedComponent.margin || ''}
+                    onChange={(e) => updateComponentStyle(selectedComponentId!, 'margin', e.target.value)}
+                    placeholder="e.g., m-4 mt-6"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono"
+                  />
                 </div>
 
                 {/* Border */}
@@ -739,11 +765,17 @@ export default function DesignerPage() {
                     Border
                   </label>
                   <select
-                    value={selectedComponent.border || ''}
-                    onChange={(e) => updateComponentStyle(selectedComponentId!, 'border', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const currentClasses = selectedComponent.border || '';
+                        const newClasses = currentClasses ? `${currentClasses} ${e.target.value}` : e.target.value;
+                        updateComponentStyle(selectedComponentId!, 'border', newClasses);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
                   >
-                    <option value="">None</option>
+                    <option value="">Select to add...</option>
                     <optgroup label="All Sides">
                       <option value="border">border (1px)</option>
                       <option value="border-0">border-0 (0)</option>
@@ -779,7 +811,30 @@ export default function DesignerPage() {
                       <option value="border-l-4">border-l-4 (4px)</option>
                       <option value="border-l-8">border-l-8 (8px)</option>
                     </optgroup>
+                    <optgroup label="Border Color">
+                      <option value="border-gray-300">border-gray-300</option>
+                      <option value="border-gray-500">border-gray-500</option>
+                      <option value="border-blue-500">border-blue-500</option>
+                      <option value="border-red-500">border-red-500</option>
+                      <option value="border-green-500">border-green-500</option>
+                      <option value="border-black">border-black</option>
+                    </optgroup>
+                    <optgroup label="Border Radius">
+                      <option value="rounded">rounded</option>
+                      <option value="rounded-sm">rounded-sm</option>
+                      <option value="rounded-md">rounded-md</option>
+                      <option value="rounded-lg">rounded-lg</option>
+                      <option value="rounded-xl">rounded-xl</option>
+                      <option value="rounded-full">rounded-full</option>
+                    </optgroup>
                   </select>
+                  <input
+                    type="text"
+                    value={selectedComponent.border || ''}
+                    onChange={(e) => updateComponentStyle(selectedComponentId!, 'border', e.target.value)}
+                    placeholder="e.g., border border-gray-300 rounded"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono"
+                  />
                 </div>
 
                 {/* TextArea specific properties */}
