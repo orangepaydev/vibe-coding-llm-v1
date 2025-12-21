@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Split, Trash2, Type, AlignLeft, FileText, List, Circle, CheckSquare, Calendar, Clock, CalendarClock, Table } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Split, Trash2, Type, AlignLeft, FileText, List, Circle, CheckSquare, Calendar, Clock, CalendarClock, Table, SquareMousePointer } from 'lucide-react';
 import { DesignPanel, type PanelNode, type ComponentInstance } from './Design';
 
 export default function DesignerPage() {
@@ -166,6 +166,7 @@ export default function DesignerPage() {
   };
 
   const uiComponents = [
+    { type: 'button', label: 'Button', icon: SquareMousePointer },
     { type: 'textbox', label: 'Textbox', icon: Type },
     { type: 'label', label: 'Label', icon: AlignLeft },
     { type: 'textarea', label: 'TextArea', icon: FileText },

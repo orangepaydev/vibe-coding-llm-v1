@@ -93,6 +93,14 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
     const wrapperClasses = `transition-all cursor-pointer rounded ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`;
 
     switch (component.type) {
+      case 'button':
+        return (
+          <div key={component.id} className={`p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+            <button className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+              {component.label}
+            </button>
+          </div>
+        );
       case 'textbox':
         return (
           <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
