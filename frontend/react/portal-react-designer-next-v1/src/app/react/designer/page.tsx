@@ -9,7 +9,7 @@ export default function DesignerPage() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gray-50">
-      {/* Left Panel */}
+      {/* UI Component Panel */}
       <div
         className={`relative transition-all duration-300 ease-in-out bg-white border-r border-gray-200 ${
           isLeftPanelCollapsed ? 'w-0' : 'w-[15%]'
@@ -17,9 +17,9 @@ export default function DesignerPage() {
       >
         <div className={`h-full overflow-auto ${isLeftPanelCollapsed ? 'hidden' : 'block'}`}>
           <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Left Panel</h2>
+            <h2 className="text-lg font-semibold mb-4">UI Component Panel</h2>
             <p className="text-sm text-gray-600">
-              This is the left panel content. Add your components, tools, or navigation here.
+              Browse and select UI components to add to your design canvas.
             </p>
           </div>
         </div>
@@ -38,7 +38,7 @@ export default function DesignerPage() {
         </button>
       </div>
 
-      {/* Center Panel */}
+      {/* UI Design Panel */}
       <div
         className={`flex-1 transition-all duration-300 ease-in-out bg-gray-50 overflow-auto ${
           isLeftPanelCollapsed && isRightPanelCollapsed
@@ -49,9 +49,9 @@ export default function DesignerPage() {
         }`}
       >
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Designer Canvas</h1>
+          <h1 className="text-2xl font-bold mb-4">UI Design Panel</h1>
           <p className="text-gray-600 mb-4">
-            This is the center panel - your main workspace. It occupies 70% of the screen when both side panels are open.
+            Your main design canvas where you compose and arrange UI components. This panel occupies 70% of the screen when both side panels are open.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
@@ -66,7 +66,7 @@ export default function DesignerPage() {
         </div>
       </div>
 
-      {/* Right Panel */}
+      {/* UI Property Panel */}
       <div
         className={`relative transition-all duration-300 ease-in-out bg-white border-l border-gray-200 ${
           isRightPanelCollapsed ? 'w-0' : 'w-[15%]'
@@ -74,9 +74,9 @@ export default function DesignerPage() {
       >
         <div className={`h-full overflow-auto ${isRightPanelCollapsed ? 'hidden' : 'block'}`}>
           <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Right Panel</h2>
+            <h2 className="text-lg font-semibold mb-4">UI Property Panel</h2>
             <p className="text-sm text-gray-600">
-              This is the right panel content. Add properties, settings, or additional information here.
+              Configure properties, styles, and settings for selected UI components.
             </p>
           </div>
         </div>
