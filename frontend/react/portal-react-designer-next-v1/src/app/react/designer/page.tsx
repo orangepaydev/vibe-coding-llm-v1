@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Split, Trash2, Type, AlignLeft, FileText, List, Circle, CheckSquare, Calendar, Clock, CalendarClock, Table, SquareMousePointer } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Split, Trash2, Type, AlignLeft, FileText, List, Circle, CheckSquare, Calendar, Clock, CalendarClock, Table, SquareMousePointer, Save, Download } from 'lucide-react';
 import { DesignPanel, type PanelNode, type ComponentInstance } from './Design';
 
 export default function DesignerPage() {
@@ -40,6 +40,77 @@ export default function DesignerPage() {
     }
   };
 
+  const handleSave = async () => {
+    if (!componentUrl.trim()) {
+      alert('Please enter a file name');
+      return;
+    }
+
+    if (panels.length === 0) {
+      alert('Please add at least one panel before saving');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/design', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          panels: panels,
+          fileName: componentUrl.trim(),
+          action: 'save',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`Design saved successfully!\n\nFile: ${data.filePath}`);
+      } else {
+        alert(`Error: ${data.error}\n${data.details || ''}`);
+      }
+    } catch (error) {
+      console.error('Failed to save design:', error);
+      alert('Failed to save design. Check console for details.');
+    }
+  };
+
+  const handleLoad = async () => {
+    if (!componentUrl.trim()) {
+      alert('Please enter a file name to load');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/design', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: componentUrl.trim(),
+          action: 'load',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPanels(data.data.panels);
+        setSelectedPanelId(null);
+        setSelectedComponentId(null);
+        alert(`Design loaded successfully!\n\nFile: ${data.data.fileName}`);
+      } else {
+        alert(`Error: ${data.error}\n${data.details || ''}`);
+      }
+    } catch (error) {
+      console.error('Failed to load design:', error);
+      alert('Failed to load design. Check console for details.');
+    }
+  };
+
   const handleGenerate = async () => {
     if (!componentUrl.trim()) {
       alert('Please enter a file name for the component');
@@ -52,6 +123,24 @@ export default function DesignerPage() {
     }
 
     try {
+      // First save the design (silently)
+      const saveResponse = await fetch('/api/design', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          panels: panels,
+          fileName: componentUrl.trim(),
+          action: 'save',
+        }),
+      });
+      
+      if (!saveResponse.ok) {
+        console.warn('Design save failed, but continuing with generation');
+      }
+      
+      // Then generate the component
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -66,7 +155,7 @@ export default function DesignerPage() {
       const data = await response.json();
 
       if (response.ok) {
-        alert(`Component generated successfully!\n\nFile: ${data.filePath}\nComponent: ${data.componentName}`);
+        alert(`Component generated and design saved successfully!\n\nComponent File: ${data.filePath}\nComponent: ${data.componentName}`);
       } else {
         alert(`Error: ${data.error}\n${data.details || ''}`);
       }
@@ -383,6 +472,20 @@ export default function DesignerPage() {
                 placeholder="Enter file name (e.g., my-form.tsx)"
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
               />
+              <button
+                onClick={handleSave}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                <Save className="w-5 h-5" />
+                Save
+              </button>
+              <button
+                onClick={handleLoad}
+                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                <Download className="w-5 h-5" />
+                Load
+              </button>
               <button
                 onClick={handleGenerate}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"

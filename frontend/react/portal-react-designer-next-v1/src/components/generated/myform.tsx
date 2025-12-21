@@ -26,7 +26,7 @@ export default function Myform() {
       <Textarea id="panel-1766307204392-10jqbv2j8" placeholder="Enter text" rows={3} />
     </div>
 
-    <div className="w-5/12 p-1">
+    <div className="w-1/2 p-5">
       <Label>{"Label"}</Label>
     </div>
 
