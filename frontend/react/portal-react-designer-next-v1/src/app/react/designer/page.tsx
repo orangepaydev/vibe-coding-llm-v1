@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Split, Trash2 } from 'lucide-react';
-import { DesignPanel, type PanelNode } from './Design';
+import { ChevronLeft, ChevronRight, Plus, Split, Trash2, Type, AlignLeft, FileText, List, Circle, CheckSquare, Calendar, Clock, CalendarClock, Table } from 'lucide-react';
+import { DesignPanel, type PanelNode, type ComponentInstance } from './Design';
 
 export default function DesignerPage() {
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
@@ -26,6 +26,7 @@ export default function DesignerPage() {
     rowStart: '',
     backgroundColor: 'bg-white',
     children: [],
+    components: [],
   });
 
   const addRootPanel = () => {
@@ -126,6 +127,36 @@ export default function DesignerPage() {
 
   const selectedPanel = selectedPanelId ? findPanelById(panels, selectedPanelId) : null;
 
+  const handleDropComponent = (panelId: string, componentType: string) => {
+    const newComponent: ComponentInstance = {
+      id: generateId(),
+      type: componentType,
+      label: componentType.charAt(0).toUpperCase() + componentType.slice(1),
+      properties: {},
+    };
+
+    setPanels(
+      findAndUpdatePanel(panels, panelId, (panel) => ({
+        ...panel,
+        components: [...(panel.components || []), newComponent],
+      }))
+    );
+  };
+
+  const uiComponents = [
+    { type: 'textbox', label: 'Textbox', icon: Type },
+    { type: 'label', label: 'Label', icon: AlignLeft },
+    { type: 'textarea', label: 'TextArea', icon: FileText },
+    { type: 'select', label: 'Select Dropdown', icon: List },
+    { type: 'radio', label: 'Radio Button', icon: Circle },
+    { type: 'checkbox', label: 'Checkbox', icon: CheckSquare },
+    { type: 'calendar', label: 'Calendar', icon: Calendar },
+    { type: 'date', label: 'Date Selector', icon: Calendar },
+    { type: 'time', label: 'Time Selector', icon: Clock },
+    { type: 'datetime', label: 'Date Time Selector', icon: CalendarClock },
+    { type: 'table', label: 'Table', icon: Table },
+  ];
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-gray-50">
       {/* UI Component Panel */}
@@ -136,8 +167,26 @@ export default function DesignerPage() {
       >
         <div className={`h-full overflow-auto ${isLeftPanelCollapsed ? 'hidden' : 'block'}`}>
           <div className="p-4">
-            <h2 className="text-lg font-semibold mb-4">UI Component Panel</h2>
-            <div className="text-sm text-gray-500">Components will appear here</div>
+            <h2 className="text-lg font-semibold mb-4">UI Components</h2>
+            <div className="space-y-2">
+              {uiComponents.map((component) => {
+                const Icon = component.icon;
+                return (
+                  <div
+                    key={component.type}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('componentType', component.type);
+                      e.dataTransfer.effectAllowed = 'copy';
+                    }}
+                    className="flex items-center gap-2 p-3 bg-white border border-gray-300 rounded-lg cursor-move hover:border-blue-400 hover:shadow-sm transition-all"
+                  >
+                    <Icon className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">{component.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
         
@@ -197,6 +246,7 @@ export default function DesignerPage() {
                   panel={panel} 
                   selectedPanelId={selectedPanelId}
                   onSelectPanel={setSelectedPanelId}
+                  onDropComponent={handleDropComponent}
                 />
               ))
             )}

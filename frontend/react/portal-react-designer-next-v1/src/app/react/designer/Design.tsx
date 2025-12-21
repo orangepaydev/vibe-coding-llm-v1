@@ -1,4 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+interface ComponentInstance {
+  id: string;
+  type: string;
+  label: string;
+  properties: Record<string, any>;
+}
 
 interface PanelNode {
   id: string;
@@ -14,21 +21,26 @@ interface PanelNode {
   rowStart: 'row-start-1' | 'row-start-2' | 'row-start-3' | 'row-start-4' | 'row-start-5' | 'row-start-6' | 'row-start-auto' | '';
   backgroundColor: string;
   children: PanelNode[];
+  components: ComponentInstance[];
 }
 
 interface DesignPanelProps {
   panel: PanelNode;
   selectedPanelId: string | null;
   onSelectPanel: (panelId: string) => void;
+  onDropComponent: (panelId: string, componentType: string) => void;
 }
 
 export const DesignPanel: React.FC<DesignPanelProps> = ({ 
   panel, 
   selectedPanelId, 
-  onSelectPanel 
+  onSelectPanel,
+  onDropComponent
 }) => {
+  const [isDragOver, setIsDragOver] = useState(false);
   const isSelected = selectedPanelId === panel.id;
   const hasChildren = panel.children.length > 0;
+  const hasComponents = panel.components && panel.components.length > 0;
 
   const layoutClasses = panel.layoutType === 'grid' 
     ? `grid ${panel.gridCols}`
@@ -43,6 +55,131 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
     border-2 rounded-lg transition-all cursor-pointer
     ${isSelected ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400'}
   `.trim();
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    
+    const componentType = e.dataTransfer.getData('componentType');
+    if (componentType) {
+      onDropComponent(panel.id, componentType);
+    }
+  };
+
+  const renderComponent = (component: ComponentInstance) => {
+    switch (component.type) {
+      case 'textbox':
+        return (
+          <div key={component.id} className="flex flex-col gap-1 p-2">
+            <label className="text-xs font-medium text-gray-700">{component.label}</label>
+            <input type="text" placeholder="Enter text" className="px-2 py-1 border border-gray-300 rounded text-sm" />
+          </div>
+        );
+      case 'label':
+        return (
+          <div key={component.id} className="p-2">
+            <label className="text-sm font-medium text-gray-700">{component.label}</label>
+          </div>
+        );
+      case 'textarea':
+        return (
+          <div key={component.id} className="flex flex-col gap-1 p-2">
+            <label className="text-xs font-medium text-gray-700">{component.label}</label>
+            <textarea placeholder="Enter text" rows={3} className="px-2 py-1 border border-gray-300 rounded text-sm resize-none" />
+          </div>
+        );
+      case 'select':
+        return (
+          <div key={component.id} className="flex flex-col gap-1 p-2">
+            <label className="text-xs font-medium text-gray-700">{component.label}</label>
+            <select className="px-2 py-1 border border-gray-300 rounded text-sm">
+              <option>Option 1</option>
+              <option>Option 2</option>
+              <option>Option 3</option>
+            </select>
+          </div>
+        );
+      case 'radio':
+        return (
+          <div key={component.id} className="flex items-center gap-2 p-2">
+            <input type="radio" name={component.id} className="w-4 h-4" />
+            <label className="text-sm text-gray-700">{component.label}</label>
+          </div>
+        );
+      case 'checkbox':
+        return (
+          <div key={component.id} className="flex items-center gap-2 p-2">
+            <input type="checkbox" className="w-4 h-4 border-gray-300 rounded" />
+            <label className="text-sm text-gray-700">{component.label}</label>
+          </div>
+        );
+      case 'calendar':
+        return (
+          <div key={component.id} className="flex flex-col gap-1 p-2">
+            <label className="text-xs font-medium text-gray-700">{component.label}</label>
+            <input type="date" className="px-2 py-1 border border-gray-300 rounded text-sm" />
+          </div>
+        );
+      case 'date':
+        return (
+          <div key={component.id} className="flex flex-col gap-1 p-2">
+            <label className="text-xs font-medium text-gray-700">{component.label}</label>
+            <input type="date" className="px-2 py-1 border border-gray-300 rounded text-sm" />
+          </div>
+        );
+      case 'time':
+        return (
+          <div key={component.id} className="flex flex-col gap-1 p-2">
+            <label className="text-xs font-medium text-gray-700">{component.label}</label>
+            <input type="time" className="px-2 py-1 border border-gray-300 rounded text-sm" />
+          </div>
+        );
+      case 'datetime':
+        return (
+          <div key={component.id} className="flex flex-col gap-1 p-2">
+            <label className="text-xs font-medium text-gray-700">{component.label}</label>
+            <input type="datetime-local" className="px-2 py-1 border border-gray-300 rounded text-sm" />
+          </div>
+        );
+      case 'table':
+        return (
+          <div key={component.id} className="p-2">
+            <label className="text-xs font-medium text-gray-700 mb-2 block">{component.label}</label>
+            <table className="w-full border border-gray-300 text-xs">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="border border-gray-300 px-2 py-1">Column 1</th>
+                  <th className="border border-gray-300 px-2 py-1">Column 2</th>
+                  <th className="border border-gray-300 px-2 py-1">Column 3</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1">Data 1</td>
+                  <td className="border border-gray-300 px-2 py-1">Data 2</td>
+                  <td className="border border-gray-300 px-2 py-1">Data 3</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div
@@ -61,7 +198,8 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
             <DesignPanel 
               panel={child} 
               selectedPanelId={selectedPanelId} 
-              onSelectPanel={onSelectPanel} 
+              onSelectPanel={onSelectPanel}
+              onDropComponent={onDropComponent}
             />
           </div>
         ))
@@ -70,8 +208,21 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
           <div className="flex items-center justify-center p-2 border-b border-gray-200">
             <div className="text-sm font-medium text-gray-600">{panel.name}</div>
           </div>
-          <div className="flex-1 bg-gray-100 border-2 border-dashed border-gray-300 rounded m-2 flex items-center justify-center min-h-[60px]">
-            <div className="text-xs text-gray-400">Drop UI Components Here</div>
+          <div 
+            className={`flex-1 border-2 border-dashed rounded m-2 flex flex-col items-center justify-center min-h-[60px] transition-colors ${
+              isDragOver ? 'bg-blue-100 border-blue-400' : 'bg-gray-100 border-gray-300'
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {hasComponents ? (
+              <div className="w-full h-full p-2 space-y-2 overflow-auto">
+                {panel.components.map((component) => renderComponent(component))}
+              </div>
+            ) : (
+              <div className="text-xs text-gray-400">Drop UI Components Here</div>
+            )}
           </div>
         </div>
       )}
@@ -79,4 +230,4 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
   );
 };
 
-export type { PanelNode };
+export type { PanelNode, ComponentInstance };
