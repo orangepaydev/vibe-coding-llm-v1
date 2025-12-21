@@ -31,6 +31,7 @@ interface DesignPanelProps {
   onSelectPanel: (panelId: string) => void;
   onSelectComponent: (componentId: string) => void;
   onDropComponent: (panelId: string, componentType: string) => void;
+  onReorderComponents: (panelId: string, dragIndex: number, dropIndex: number) => void;
 }
 
 export const DesignPanel: React.FC<DesignPanelProps> = ({ 
@@ -39,9 +40,11 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
   selectedComponentId,
   onSelectPanel,
   onSelectComponent,
-  onDropComponent
+  onDropComponent,
+  onReorderComponents
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [draggedComponentIndex, setDraggedComponentIndex] = useState<number | null>(null);
   const isSelected = selectedPanelId === panel.id;
   const hasChildren = panel.children.length > 0;
   const hasComponents = panel.components && panel.components.length > 0;
@@ -83,19 +86,57 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
     }
   };
 
-  const renderComponent = (component: ComponentInstance) => {
+  const handleComponentDragStart = (e: React.DragEvent, index: number) => {
+    e.stopPropagation();
+    setDraggedComponentIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('componentIndex', index.toString());
+  };
+
+  const handleComponentDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (draggedComponentIndex !== null && draggedComponentIndex !== index) {
+      e.dataTransfer.dropEffect = 'move';
+    }
+  };
+
+  const handleComponentDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const dragIndexStr = e.dataTransfer.getData('componentIndex');
+    if (dragIndexStr && draggedComponentIndex !== null) {
+      const dragIndex = parseInt(dragIndexStr);
+      if (dragIndex !== dropIndex) {
+        onReorderComponents(panel.id, dragIndex, dropIndex);
+      }
+    }
+    setDraggedComponentIndex(null);
+  };
+
+  const renderComponent = (component: ComponentInstance, index: number) => {
     const isSelected = selectedComponentId === component.id;
+    const isDragging = draggedComponentIndex === index;
     const handleComponentClick = (e: React.MouseEvent) => {
       e.stopPropagation();
       onSelectComponent(component.id);
     };
 
-    const wrapperClasses = `transition-all cursor-pointer rounded ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`;
+    const wrapperClasses = `transition-all cursor-move rounded ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'} ${isDragging ? 'opacity-50' : ''}`;
 
     switch (component.type) {
       case 'button':
         return (
-          <div key={component.id} className={`p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <button className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
               {component.label}
             </button>
@@ -103,27 +144,59 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
         );
       case 'textbox':
         return (
-          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="text" placeholder="Enter text" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'label':
         return (
-          <div key={component.id} className={`p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <label className="text-sm font-medium text-gray-700">{component.label}</label>
           </div>
         );
       case 'textarea':
         return (
-          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <textarea placeholder="Enter text" rows={3} className="px-2 py-1 border border-gray-300 rounded text-sm resize-none" />
           </div>
         );
       case 'select':
         return (
-          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <select className="px-2 py-1 border border-gray-300 rounded text-sm">
               <option>Option 1</option>
@@ -134,49 +207,105 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
         );
       case 'radio':
         return (
-          <div key={component.id} className={`flex items-center gap-2 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`flex items-center gap-2 p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <input type="radio" name={component.id} className="w-4 h-4" />
             <label className="text-sm text-gray-700">{component.label}</label>
           </div>
         );
       case 'checkbox':
         return (
-          <div key={component.id} className={`flex items-center gap-2 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`flex items-center gap-2 p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <input type="checkbox" className="w-4 h-4 border-gray-300 rounded" />
             <label className="text-sm text-gray-700">{component.label}</label>
           </div>
         );
       case 'calendar':
         return (
-          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="date" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'date':
         return (
-          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="date" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'time':
         return (
-          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="time" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'datetime':
         return (
-          <div key={component.id} className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`flex flex-col gap-1 p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <label className="text-xs font-medium text-gray-700">{component.label}</label>
             <input type="datetime-local" className="px-2 py-1 border border-gray-300 rounded text-sm" />
           </div>
         );
       case 'table':
         return (
-          <div key={component.id} className={`p-2 ${wrapperClasses}`} onClick={handleComponentClick}>
+          <div 
+            key={component.id} 
+            className={`p-2 ${wrapperClasses}`} 
+            onClick={handleComponentClick}
+            draggable
+            onDragStart={(e) => handleComponentDragStart(e, index)}
+            onDragOver={(e) => handleComponentDragOver(e, index)}
+            onDrop={(e) => handleComponentDrop(e, index)}
+          >
             <label className="text-xs font-medium text-gray-700 mb-2 block">{component.label}</label>
             <table className="w-full border border-gray-300 text-xs">
               <thead>
@@ -222,6 +351,7 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
               onSelectPanel={onSelectPanel}
               onSelectComponent={onSelectComponent}
               onDropComponent={onDropComponent}
+              onReorderComponents={onReorderComponents}
             />
           </div>
         ))
@@ -240,7 +370,7 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
           >
             {hasComponents ? (
               <div className="w-full h-full p-2 space-y-2 overflow-auto">
-                {panel.components.map((component) => renderComponent(component))}
+                {panel.components.map((component, index) => renderComponent(component, index))}
               </div>
             ) : (
               <div className="text-xs text-gray-400">Drop UI Components Here</div>

@@ -165,6 +165,20 @@ export default function DesignerPage() {
     );
   };
 
+  const handleReorderComponents = (panelId: string, dragIndex: number, dropIndex: number) => {
+    setPanels(
+      findAndUpdatePanel(panels, panelId, (panel) => {
+        const newComponents = [...panel.components];
+        const [draggedComponent] = newComponents.splice(dragIndex, 1);
+        newComponents.splice(dropIndex, 0, draggedComponent);
+        return {
+          ...panel,
+          components: newComponents,
+        };
+      })
+    );
+  };
+
   const uiComponents = [
     { type: 'button', label: 'Button', icon: SquareMousePointer },
     { type: 'textbox', label: 'Textbox', icon: Type },
@@ -275,6 +289,7 @@ export default function DesignerPage() {
                   }}
                   onSelectComponent={handleSelectComponent}
                   onDropComponent={handleDropComponent}
+                  onReorderComponents={handleReorderComponents}
                 />
               ))
             )}
