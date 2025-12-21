@@ -32,6 +32,9 @@ interface DesignPanelProps {
   onSelectComponent: (componentId: string) => void;
   onDropComponent: (panelId: string, componentType: string) => void;
   onReorderComponents: (panelId: string, dragIndex: number, dropIndex: number) => void;
+  onReorderPanels: (parentId: string | null, dragIndex: number, dropIndex: number) => void;
+  parentId?: string | null;
+  indexInParent?: number;
 }
 
 export const DesignPanel: React.FC<DesignPanelProps> = ({ 
@@ -41,10 +44,14 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
   onSelectPanel,
   onSelectComponent,
   onDropComponent,
-  onReorderComponents
+  onReorderComponents,
+  onReorderPanels,
+  parentId = null,
+  indexInParent = 0
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [draggedComponentIndex, setDraggedComponentIndex] = useState<number | null>(null);
+  const [isPanelDragOver, setIsPanelDragOver] = useState(false);
   const isSelected = selectedPanelId === panel.id;
   const hasChildren = panel.children.length > 0;
   const hasComponents = panel.components && panel.components.length > 0;
@@ -59,8 +66,9 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
     ${panel.backgroundColor}
     ${hasChildren ? 'p-2 gap-2' : 'p-4'}
     ${hasChildren ? 'min-h-[200px]' : 'min-h-[100px]'}
-    border-2 rounded-lg transition-all cursor-pointer
+    border-2 rounded-lg transition-all cursor-move
     ${isSelected ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400'}
+    ${isPanelDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : ''}
   `.trim();
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -113,6 +121,49 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
       }
     }
     setDraggedComponentIndex(null);
+  };
+
+  const handlePanelDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('panelIndex', indexInParent.toString());
+    e.dataTransfer.setData('parentId', parentId || 'root');
+  };
+
+  const handlePanelDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const dragParentId = e.dataTransfer.types.includes('parentid') ? 'exists' : null;
+    if (dragParentId) {
+      e.dataTransfer.dropEffect = 'move';
+      setIsPanelDragOver(true);
+    }
+  };
+
+  const handlePanelDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsPanelDragOver(false);
+  };
+
+  const handlePanelDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsPanelDragOver(false);
+    
+    const dragIndexStr = e.dataTransfer.getData('panelIndex');
+    const dragParentId = e.dataTransfer.getData('parentId');
+    
+    if (dragIndexStr && dragParentId) {
+      const dragIndex = parseInt(dragIndexStr);
+      const currentParentId = parentId || 'root';
+      
+      // Only reorder if panels are siblings (same parent)
+      if (dragParentId === currentParentId && dragIndex !== indexInParent) {
+        onReorderPanels(parentId, dragIndex, indexInParent);
+      }
+    }
   };
 
   const renderComponent = (component: ComponentInstance, index: number) => {
@@ -337,9 +388,14 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
         e.stopPropagation();
         onSelectPanel(panel.id);
       }}
+      draggable={parentId !== undefined}
+      onDragStart={handlePanelDragStart}
+      onDragOver={handlePanelDragOver}
+      onDragLeave={handlePanelDragLeave}
+      onDrop={handlePanelDrop}
     >
       {hasChildren ? (
-        panel.children.map((child) => (
+        panel.children.map((child, index) => (
           <div 
             key={child.id} 
             className={panel.flexDirection === 'flex-col' ? 'w-full flex-1' : 'flex-1 min-w-0'}
@@ -352,6 +408,9 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
               onSelectComponent={onSelectComponent}
               onDropComponent={onDropComponent}
               onReorderComponents={onReorderComponents}
+              onReorderPanels={onReorderPanels}
+              parentId={panel.id}
+              indexInParent={index}
             />
           </div>
         ))

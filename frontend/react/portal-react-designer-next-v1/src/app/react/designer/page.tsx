@@ -179,6 +179,29 @@ export default function DesignerPage() {
     );
   };
 
+  const handleReorderPanels = (parentId: string | null, dragIndex: number, dropIndex: number) => {
+    if (parentId === null || parentId === 'root') {
+      // Reordering root level panels
+      const newPanels = [...panels];
+      const [draggedPanel] = newPanels.splice(dragIndex, 1);
+      newPanels.splice(dropIndex, 0, draggedPanel);
+      setPanels(newPanels);
+    } else {
+      // Reordering child panels within a parent
+      setPanels(
+        findAndUpdatePanel(panels, parentId, (panel) => {
+          const newChildren = [...panel.children];
+          const [draggedPanel] = newChildren.splice(dragIndex, 1);
+          newChildren.splice(dropIndex, 0, draggedPanel);
+          return {
+            ...panel,
+            children: newChildren,
+          };
+        })
+      );
+    }
+  };
+
   const uiComponents = [
     { type: 'button', label: 'Button', icon: SquareMousePointer },
     { type: 'textbox', label: 'Textbox', icon: Type },
@@ -277,7 +300,7 @@ export default function DesignerPage() {
                 </div>
               </div>
             ) : (
-              panels.map((panel) => (
+              panels.map((panel, index) => (
                 <DesignPanel 
                   key={panel.id} 
                   panel={panel} 
@@ -290,6 +313,9 @@ export default function DesignerPage() {
                   onSelectComponent={handleSelectComponent}
                   onDropComponent={handleDropComponent}
                   onReorderComponents={handleReorderComponents}
+                  onReorderPanels={handleReorderPanels}
+                  parentId={null}
+                  indexInParent={index}
                 />
               ))
             )}
