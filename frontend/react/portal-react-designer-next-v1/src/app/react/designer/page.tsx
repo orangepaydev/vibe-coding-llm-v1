@@ -236,6 +236,23 @@ export default function DesignerPage() {
     }
   };
 
+  const findAndDeleteComponent = (nodes: PanelNode[], componentId: string): PanelNode[] => {
+    return nodes.map((node) => ({
+      ...node,
+      components: node.components ? node.components.filter((c) => c.id !== componentId) : [],
+      children: findAndDeleteComponent(node.children, componentId),
+    }));
+  };
+
+  const deleteComponent = (componentId: string) => {
+    if (confirm('Are you sure you want to delete this component?')) {
+      setPanels(findAndDeleteComponent(panels, componentId));
+      if (selectedComponentId === componentId) {
+        setSelectedComponentId(null);
+      }
+    }
+  };
+
   const updatePanelProperty = (panelId: string, property: keyof PanelNode, value: any) => {
     setPanels(
       findAndUpdatePanel(panels, panelId, (panel) => ({
@@ -556,6 +573,17 @@ export default function DesignerPage() {
             {selectedComponent ? (
               <div className="space-y-4">
                 <div className="text-sm font-medium text-blue-600 mb-2">Component Selected</div>
+                
+                <div className="space-y-2 mb-4">
+                  <button
+                    onClick={() => deleteComponent(selectedComponent.id)}
+                    className="w-full px-3 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600 flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Component
+                  </button>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Component Type
