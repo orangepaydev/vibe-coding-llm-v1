@@ -297,15 +297,44 @@ ${panelsCode}
       );
     }
     
-    // Write file
+    // Write component file
     const filePath = join(outputDir, fileName.endsWith('.tsx') ? fileName : `${fileName}.tsx`);
     await writeFile(filePath, fullCode, 'utf-8');
     
+    // Generate corresponding page
+    const baseFileName = fileName.replace(/\.tsx?$/, '');
+    const pageDir = join(process.cwd(), 'src', 'app', baseFileName);
+    
+    // Create page directory if it doesn't exist
+    try {
+      await mkdir(pageDir, { recursive: true });
+    } catch (mkdirError) {
+      console.error('Failed to create page directory:', mkdirError);
+      return NextResponse.json(
+        { error: 'Failed to create page directory', details: mkdirError instanceof Error ? mkdirError.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+    
+    // Generate page code
+    const pageCode = `import ${componentName} from "@/components/generated/${baseFileName}";
+
+export default function ${componentName}Page() {
+  return (<${componentName}></${componentName}>);
+}
+`;
+    
+    // Write page file
+    const pagePath = join(pageDir, 'page.tsx');
+    await writeFile(pagePath, pageCode, 'utf-8');
+    
     return NextResponse.json({
       success: true,
-      message: 'Component generated successfully',
+      message: 'Component and page generated successfully',
       filePath: filePath,
-      componentName: componentName
+      pagePath: pagePath,
+      componentName: componentName,
+      pageUrl: `/${baseFileName}`
     });
     
   } catch (error) {
