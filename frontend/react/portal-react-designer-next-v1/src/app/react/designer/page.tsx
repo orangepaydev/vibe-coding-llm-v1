@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Split, Trash2, Type, AlignLeft, FileText, List, Circle, CheckSquare, Calendar, Clock, CalendarClock, Table, SquareMousePointer, Save, Download } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Split, Trash2, Type, AlignLeft, FileText, List, Circle, CheckSquare, Calendar, Clock, CalendarClock, Table, SquareMousePointer, Save, Download, Eye } from 'lucide-react';
 import { DesignPanel, type PanelNode, type ComponentInstance } from './Design';
 
 export default function DesignerPage() {
@@ -498,6 +498,22 @@ export default function DesignerPage() {
               >
                 <Save className="w-5 h-5" />
                 Save
+              </button>
+              <button
+                onClick={() => {
+                  if (componentUrl) {
+                    window.open(`/${componentUrl}`, '_blank');
+                  }
+                }}
+                disabled={!componentUrl}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  componentUrl
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                <Eye className="w-5 h-5" />
+                View
               </button>
               <button
                 onClick={handleLoad}
