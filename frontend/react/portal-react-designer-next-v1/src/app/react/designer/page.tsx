@@ -381,7 +381,7 @@ export default function DesignerPage() {
     setPanels(updateComponent(panels));
   };
 
-  const updateComponentStyle = (componentId: string, styleProperty: 'width' | 'height' | 'flexGrow', value: string) => {
+  const updateComponentStyle = (componentId: string, styleProperty: 'width' | 'height' | 'flexGrow' | 'border' | 'margin' | 'padding', value: string) => {
     const updateComponent = (nodes: PanelNode[]): PanelNode[] => {
       return nodes.map(node => ({
         ...node,
