@@ -177,7 +177,7 @@ ${indent}</div>`;
       generateComponentCode(comp).split('\n').map(line => `${indent}  ${line}`).join('\n')
     ).join('\n\n');
     return `${indent}<div className="${allClasses}">
-${indent}  <div className="text-sm font-semibold mb-2">{${JSON.stringify(panel.name)}}</div>
+${indent}  <div className="text-sm font-semibold mb-2 w-full">{${JSON.stringify(panel.name)}}</div>
 ${componentsCode}
 ${indent}</div>`;
   } else {
