@@ -28,6 +28,9 @@ export default function DesignerPage() {
     rowSpan: '',
     rowStart: '',
     backgroundColor: 'bg-white',
+    padding: '',
+    margin: '',
+    border: '',
     children: [],
     components: [],
   });
@@ -1317,6 +1320,278 @@ export default function DesignerPage() {
                     <option value="bg-purple-50">bg-purple-50</option>
                     <option value="bg-purple-100">bg-purple-100</option>
                   </select>
+                </div>
+
+                {/* Padding */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Padding
+                  </label>
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const currentClasses = selectedPanel.padding || '';
+                        const newClasses = currentClasses ? `${currentClasses} ${e.target.value}` : e.target.value;
+                        updatePanelProperty(selectedPanel.id, 'padding', newClasses);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
+                  >
+                    <option value="">Select to add...</option>
+                    <optgroup label="All Sides">
+                      <option value="p-0">p-0 (0)</option>
+                      <option value="p-1">p-1 (0.25rem)</option>
+                      <option value="p-2">p-2 (0.5rem)</option>
+                      <option value="p-3">p-3 (0.75rem)</option>
+                      <option value="p-4">p-4 (1rem)</option>
+                      <option value="p-5">p-5 (1.25rem)</option>
+                      <option value="p-6">p-6 (1.5rem)</option>
+                      <option value="p-8">p-8 (2rem)</option>
+                      <option value="p-10">p-10 (2.5rem)</option>
+                      <option value="p-12">p-12 (3rem)</option>
+                    </optgroup>
+                    <optgroup label="Horizontal (Left & Right)">
+                      <option value="px-1">px-1 (0.25rem)</option>
+                      <option value="px-2">px-2 (0.5rem)</option>
+                      <option value="px-3">px-3 (0.75rem)</option>
+                      <option value="px-4">px-4 (1rem)</option>
+                      <option value="px-6">px-6 (1.5rem)</option>
+                      <option value="px-8">px-8 (2rem)</option>
+                    </optgroup>
+                    <optgroup label="Vertical (Top & Bottom)">
+                      <option value="py-1">py-1 (0.25rem)</option>
+                      <option value="py-2">py-2 (0.5rem)</option>
+                      <option value="py-3">py-3 (0.75rem)</option>
+                      <option value="py-4">py-4 (1rem)</option>
+                      <option value="py-6">py-6 (1.5rem)</option>
+                      <option value="py-8">py-8 (2rem)</option>
+                    </optgroup>
+                    <optgroup label="Top">
+                      <option value="pt-1">pt-1 (0.25rem)</option>
+                      <option value="pt-2">pt-2 (0.5rem)</option>
+                      <option value="pt-3">pt-3 (0.75rem)</option>
+                      <option value="pt-4">pt-4 (1rem)</option>
+                      <option value="pt-6">pt-6 (1.5rem)</option>
+                      <option value="pt-8">pt-8 (2rem)</option>
+                    </optgroup>
+                    <optgroup label="Right">
+                      <option value="pr-1">pr-1 (0.25rem)</option>
+                      <option value="pr-2">pr-2 (0.5rem)</option>
+                      <option value="pr-3">pr-3 (0.75rem)</option>
+                      <option value="pr-4">pr-4 (1rem)</option>
+                      <option value="pr-6">pr-6 (1.5rem)</option>
+                      <option value="pr-8">pr-8 (2rem)</option>
+                    </optgroup>
+                    <optgroup label="Bottom">
+                      <option value="pb-1">pb-1 (0.25rem)</option>
+                      <option value="pb-2">pb-2 (0.5rem)</option>
+                      <option value="pb-3">pb-3 (0.75rem)</option>
+                      <option value="pb-4">pb-4 (1rem)</option>
+                      <option value="pb-6">pb-6 (1.5rem)</option>
+                      <option value="pb-8">pb-8 (2rem)</option>
+                    </optgroup>
+                    <optgroup label="Left">
+                      <option value="pl-1">pl-1 (0.25rem)</option>
+                      <option value="pl-2">pl-2 (0.5rem)</option>
+                      <option value="pl-3">pl-3 (0.75rem)</option>
+                      <option value="pl-4">pl-4 (1rem)</option>
+                      <option value="pl-6">pl-6 (1.5rem)</option>
+                      <option value="pl-8">pl-8 (2rem)</option>
+                    </optgroup>
+                  </select>
+                  <input
+                    type="text"
+                    value={selectedPanel.padding || ''}
+                    onChange={(e) => updatePanelProperty(selectedPanel.id, 'padding', e.target.value)}
+                    placeholder="e.g., p-4 pt-6"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono"
+                  />
+                </div>
+
+                {/* Margin */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Margin
+                  </label>
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const currentClasses = selectedPanel.margin || '';
+                        const newClasses = currentClasses ? `${currentClasses} ${e.target.value}` : e.target.value;
+                        updatePanelProperty(selectedPanel.id, 'margin', newClasses);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
+                  >
+                    <option value="">Select to add...</option>
+                    <optgroup label="All Sides">
+                      <option value="m-0">m-0 (0)</option>
+                      <option value="m-1">m-1 (0.25rem)</option>
+                      <option value="m-2">m-2 (0.5rem)</option>
+                      <option value="m-3">m-3 (0.75rem)</option>
+                      <option value="m-4">m-4 (1rem)</option>
+                      <option value="m-5">m-5 (1.25rem)</option>
+                      <option value="m-6">m-6 (1.5rem)</option>
+                      <option value="m-8">m-8 (2rem)</option>
+                      <option value="m-10">m-10 (2.5rem)</option>
+                      <option value="m-12">m-12 (3rem)</option>
+                      <option value="m-auto">m-auto</option>
+                    </optgroup>
+                    <optgroup label="Horizontal (Left & Right)">
+                      <option value="mx-1">mx-1 (0.25rem)</option>
+                      <option value="mx-2">mx-2 (0.5rem)</option>
+                      <option value="mx-3">mx-3 (0.75rem)</option>
+                      <option value="mx-4">mx-4 (1rem)</option>
+                      <option value="mx-6">mx-6 (1.5rem)</option>
+                      <option value="mx-8">mx-8 (2rem)</option>
+                      <option value="mx-auto">mx-auto</option>
+                    </optgroup>
+                    <optgroup label="Vertical (Top & Bottom)">
+                      <option value="my-1">my-1 (0.25rem)</option>
+                      <option value="my-2">my-2 (0.5rem)</option>
+                      <option value="my-3">my-3 (0.75rem)</option>
+                      <option value="my-4">my-4 (1rem)</option>
+                      <option value="my-6">my-6 (1.5rem)</option>
+                      <option value="my-8">my-8 (2rem)</option>
+                      <option value="my-auto">my-auto</option>
+                    </optgroup>
+                    <optgroup label="Top">
+                      <option value="mt-1">mt-1 (0.25rem)</option>
+                      <option value="mt-2">mt-2 (0.5rem)</option>
+                      <option value="mt-3">mt-3 (0.75rem)</option>
+                      <option value="mt-4">mt-4 (1rem)</option>
+                      <option value="mt-6">mt-6 (1.5rem)</option>
+                      <option value="mt-8">mt-8 (2rem)</option>
+                      <option value="mt-auto">mt-auto</option>
+                    </optgroup>
+                    <optgroup label="Right">
+                      <option value="mr-1">mr-1 (0.25rem)</option>
+                      <option value="mr-2">mr-2 (0.5rem)</option>
+                      <option value="mr-3">mr-3 (0.75rem)</option>
+                      <option value="mr-4">mr-4 (1rem)</option>
+                      <option value="mr-6">mr-6 (1.5rem)</option>
+                      <option value="mr-8">mr-8 (2rem)</option>
+                      <option value="mr-auto">mr-auto</option>
+                    </optgroup>
+                    <optgroup label="Bottom">
+                      <option value="mb-1">mb-1 (0.25rem)</option>
+                      <option value="mb-2">mb-2 (0.5rem)</option>
+                      <option value="mb-3">mb-3 (0.75rem)</option>
+                      <option value="mb-4">mb-4 (1rem)</option>
+                      <option value="mb-6">mb-6 (1.5rem)</option>
+                      <option value="mb-8">mb-8 (2rem)</option>
+                      <option value="mb-auto">mb-auto</option>
+                    </optgroup>
+                    <optgroup label="Left">
+                      <option value="ml-1">ml-1 (0.25rem)</option>
+                      <option value="ml-2">ml-2 (0.5rem)</option>
+                      <option value="ml-3">ml-3 (0.75rem)</option>
+                      <option value="ml-4">ml-4 (1rem)</option>
+                      <option value="ml-6">ml-6 (1.5rem)</option>
+                      <option value="ml-8">ml-8 (2rem)</option>
+                      <option value="ml-auto">ml-auto</option>
+                    </optgroup>
+                  </select>
+                  <input
+                    type="text"
+                    value={selectedPanel.margin || ''}
+                    onChange={(e) => updatePanelProperty(selectedPanel.id, 'margin', e.target.value)}
+                    placeholder="e.g., m-4 mt-6"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono"
+                  />
+                </div>
+
+                {/* Border */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Border
+                  </label>
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const currentClasses = selectedPanel.border || '';
+                        const newClasses = currentClasses ? `${currentClasses} ${e.target.value}` : e.target.value;
+                        updatePanelProperty(selectedPanel.id, 'border', newClasses);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm mb-2"
+                  >
+                    <option value="">Select to add...</option>
+                    <optgroup label="All Sides">
+                      <option value="border">border (1px)</option>
+                      <option value="border-0">border-0 (0)</option>
+                      <option value="border-2">border-2 (2px)</option>
+                      <option value="border-4">border-4 (4px)</option>
+                      <option value="border-8">border-8 (8px)</option>
+                    </optgroup>
+                    <optgroup label="Top">
+                      <option value="border-t">border-t (1px)</option>
+                      <option value="border-t-0">border-t-0 (0)</option>
+                      <option value="border-t-2">border-t-2 (2px)</option>
+                      <option value="border-t-4">border-t-4 (4px)</option>
+                      <option value="border-t-8">border-t-8 (8px)</option>
+                    </optgroup>
+                    <optgroup label="Right">
+                      <option value="border-r">border-r (1px)</option>
+                      <option value="border-r-0">border-r-0 (0)</option>
+                      <option value="border-r-2">border-r-2 (2px)</option>
+                      <option value="border-r-4">border-r-4 (4px)</option>
+                      <option value="border-r-8">border-r-8 (8px)</option>
+                    </optgroup>
+                    <optgroup label="Bottom">
+                      <option value="border-b">border-b (1px)</option>
+                      <option value="border-b-0">border-b-0 (0)</option>
+                      <option value="border-b-2">border-b-2 (2px)</option>
+                      <option value="border-b-4">border-b-4 (4px)</option>
+                      <option value="border-b-8">border-b-8 (8px)</option>
+                    </optgroup>
+                    <optgroup label="Left">
+                      <option value="border-l">border-l (1px)</option>
+                      <option value="border-l-0">border-l-0 (0)</option>
+                      <option value="border-l-2">border-l-2 (2px)</option>
+                      <option value="border-l-4">border-l-4 (4px)</option>
+                      <option value="border-l-8">border-l-8 (8px)</option>
+                    </optgroup>
+                    <optgroup label="Border Color">
+                      <option value="border-gray-300">border-gray-300</option>
+                      <option value="border-gray-400">border-gray-400</option>
+                      <option value="border-gray-500">border-gray-500</option>
+                      <option value="border-blue-300">border-blue-300</option>
+                      <option value="border-blue-500">border-blue-500</option>
+                      <option value="border-red-300">border-red-300</option>
+                      <option value="border-red-500">border-red-500</option>
+                      <option value="border-green-300">border-green-300</option>
+                      <option value="border-green-500">border-green-500</option>
+                    </optgroup>
+                    <optgroup label="Border Style">
+                      <option value="border-solid">border-solid</option>
+                      <option value="border-dashed">border-dashed</option>
+                      <option value="border-dotted">border-dotted</option>
+                      <option value="border-double">border-double</option>
+                      <option value="border-none">border-none</option>
+                    </optgroup>
+                    <optgroup label="Rounded Corners">
+                      <option value="rounded">rounded (0.25rem)</option>
+                      <option value="rounded-none">rounded-none</option>
+                      <option value="rounded-sm">rounded-sm</option>
+                      <option value="rounded-md">rounded-md</option>
+                      <option value="rounded-lg">rounded-lg</option>
+                      <option value="rounded-xl">rounded-xl</option>
+                      <option value="rounded-2xl">rounded-2xl</option>
+                      <option value="rounded-3xl">rounded-3xl</option>
+                      <option value="rounded-full">rounded-full</option>
+                    </optgroup>
+                  </select>
+                  <input
+                    type="text"
+                    value={selectedPanel.border || ''}
+                    onChange={(e) => updatePanelProperty(selectedPanel.id, 'border', e.target.value)}
+                    placeholder="e.g., border-2 border-gray-300 rounded-lg"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-mono"
+                  />
                 </div>
 
                 <div className="pt-4 border-t">

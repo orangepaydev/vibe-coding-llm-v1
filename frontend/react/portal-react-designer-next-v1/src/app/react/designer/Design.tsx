@@ -27,6 +27,9 @@ interface PanelNode {
   rowSpan: 'row-span-1' | 'row-span-2' | 'row-span-3' | 'row-span-4' | 'row-span-5' | 'row-span-6' | 'row-span-full' | '';
   rowStart: 'row-start-1' | 'row-start-2' | 'row-start-3' | 'row-start-4' | 'row-start-5' | 'row-start-6' | 'row-start-auto' | '';
   backgroundColor: string;
+  padding: string;
+  margin: string;
+  border: string;
   children: PanelNode[];
   components: ComponentInstance[];
 }
@@ -71,10 +74,11 @@ export const DesignPanel: React.FC<DesignPanelProps> = ({
     ${layoutClasses} ${panel.justifyContent} ${panel.alignItems}
     ${panel.colSpan} ${panel.colStart} ${panel.rowSpan} ${panel.rowStart}
     ${panel.backgroundColor}
-    ${hasChildren ? 'p-2 gap-2' : 'p-4'}
+    ${panel.padding || (hasChildren ? 'p-2' : 'p-4')} ${panel.margin || ''} ${panel.border || 'border-2'}
+    ${hasChildren ? 'gap-2' : ''}
     ${hasChildren ? 'min-h-[200px]' : 'min-h-[100px]'}
-    border-2 rounded-lg transition-all cursor-move
-    ${isSelected ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400'}
+    rounded-lg transition-all cursor-move
+    ${isSelected ? 'border-blue-500 shadow-lg' : !panel.border ? 'border-gray-300 hover:border-gray-400' : ''}
     ${isPanelDragOver ? 'ring-2 ring-blue-400 ring-offset-2' : ''}
   `.trim();
 
