@@ -1050,7 +1050,7 @@ export default function DesignerPage() {
                     <textarea
                       value={(selectedComponent.properties.options || []).join('\n')}
                       onChange={(e) => {
-                        const options = e.target.value.split('\n').filter(opt => opt.trim());
+                        const options = e.target.value.split('\n');
                         updateComponentProperty(selectedComponentId!, 'options', options);
                       }}
                       rows={5}
@@ -1069,7 +1069,7 @@ export default function DesignerPage() {
                     <textarea
                       value={(selectedComponent.properties.columns || []).join('\n')}
                       onChange={(e) => {
-                        const columns = e.target.value.split('\n').filter(col => col.trim());
+                        const columns = e.target.value.split('\n');
                         updateComponentProperty(selectedComponentId!, 'columns', columns);
                       }}
                       rows={5}
